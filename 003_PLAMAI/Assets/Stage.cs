@@ -14,17 +14,25 @@ public class Stage : MonoBehaviour
     public InputField InputFieldMinePlus;
     public InputField InputFieldMineMinus;
     public Text uiText;
-    int[,] sgmine = new int[100,100];
-    int[,] sgnum = new int[100,100];
-    int[,] sgmap = new int[100,100];
+    int[,] sgmine = new int[100,100]; //stage mine，1:正電地雷 -1:負電地雷
+    int[,] sgnum = new int[100,100]; //stage number，9:正電地雷 -9:負電地雷 0:附近沒地雷 其他:附近有幾個地雷(正負相消)
+    int[,] sgmap = new int[100,100]; //stage map，0:未開 1:剛踩探測是否為0 2:確認為0、其他數字或地雷
+    int[,] sgopnbtn = new int[100,100]; //stage open button，記憶可以開啟的複數位置，0:沒有 1:有
     int StageNumX;
     int StageNumY;
     int StageNumMPlus;
     int StageNumMMinus;
     int stagephase = 0;
+    int SelectX;
+    int SelectY;
+    bool ContinueZero = false;
+    int stageTm = 0;
 
     public void CrtBtn()
     {
+
+        //回歸關卡階段到0
+        stagephase = 0;
 
         //移除所有已創建的Btn
         for (int i = 1; i <= 100; i++)
@@ -35,6 +43,7 @@ public class Stage : MonoBehaviour
                 sgmine[i-1,j-1] = 0;
                 sgnum[i-1,j-1] = 0;
                 sgmap[i-1,j-1] = 0;
+                sgopnbtn[i-1,j-1] = 0;
             }
         }
 
@@ -91,11 +100,19 @@ public class Stage : MonoBehaviour
         Vector3 myVector = Canvas.transform.position + new Vector3(30*i-StageNumX*15-15, StageNumY*15-30*j+15, 0);
         GameObject Clone;
         Clone = (GameObject)Instantiate(Btn, myVector, new Quaternion(), BtnZone.transform);
+        Clone.GetComponent<Image>().color = Color.gray;
         Clone.name = "Btn" + i + "-" + j;
     }
 
-    public void BtnPress()
+    public void BtnPress(GameObject GameObject)
     {
+        //從按下按鈕的名稱擷取Btn位於array的位置
+        string str = GameObject.name;
+        str = str.Remove(0,3);
+        string[] strAry = str.Split('-');
+        SelectX = int.Parse(strAry[0])-1;
+        SelectY = int.Parse(strAry[1])-1;
+        uiText.text = "選取了 (" + SelectX + "," + SelectY + ")";
 
         //當所有Btn按鈕都未被按的時候，第一個Btn按下必不為地雷，同時設定所有地雷位置
         if (stagephase == 0)
@@ -120,7 +137,7 @@ public class Stage : MonoBehaviour
                 StageNumMPlus = 3 - StageNumMMinus;
                 InputFieldMinePlus.text = StageNumMPlus.ToString();
             }
-            int MineMax = Convert.ToInt32(Math.Round(StageNumX*StageNumY/3.0, 0));
+            int MineMax = Convert.ToInt32(Math.Round(StageNumX*StageNumY/3f, 0));
             if (StageNumMPlus > MineMax)
             {
                 StageNumMPlus = MineMax;
@@ -141,11 +158,11 @@ public class Stage : MonoBehaviour
             //隨機填入正負地雷
             for (int i = 0; i < StageNumMPlus; i++)
             {
-                AddMine(1);
+                AddMine(1,SelectX,SelectY);
             }
             for (int i = 0; i < StageNumMMinus; i++)
             {
-                AddMine(-1);
+                AddMine(-1,SelectX,SelectY);
             }
 
             //計算地雷周邊數字，地雷本身為9或是-9
@@ -172,15 +189,25 @@ public class Stage : MonoBehaviour
                 }
             }
 
-            //Btn陣列顯示所有地雷
-            RevealMine();
-
+            //轉換關卡階段到1
+            stagephase = 1;
         }
+
+        //關卡階段1的情況下點擊尚未開啟的Btn，則翻開該Btn
+        if (stagephase == 1 && sgmap[SelectX,SelectY] == 0)
+        {
+            sgmap[SelectX,SelectY] = 1;
+            CheckBtnStatus(SelectX, SelectY);
+            if (sgnum[SelectX,SelectY] == 0) {ContinueZero = true;}
+        }
+
+        //Btn陣列顯示所有地雷
+        //RevealMine();
 
     }
 
     //填入地雷
-    public void AddMine(int MineType)
+    public void AddMine(int MineType, int SelectX, int SelectY)
     {
         int RndX;
         int RndY;
@@ -191,7 +218,7 @@ public class Stage : MonoBehaviour
         {
             RndX = rand.Next(0,StageNumX);
             RndY = rand.Next(0,StageNumY);
-            if (sgmine[RndX,RndY] == 0)
+            if (sgmine[RndX,RndY] == 0 && SelectX != RndX && SelectY != RndY)
             {
             sgmine[RndX,RndY] = MineType;
             BtnEmpty = true;
@@ -203,30 +230,126 @@ public class Stage : MonoBehaviour
     //顯示地雷
     public void RevealMine()
     {
-        for (int i = 1; i <= StageNumX; i++)
+        for (int i = 0; i < StageNumX; i++)
         {
-            for (int j = 1; j <= StageNumY; j++)
+            for (int j = 0; j < StageNumY; j++)
             {
-
-                GameObject BtnGot = GameObject.Find("Btn" + i + "-" + j);
-                GameObject BtnTxtGot = GameObject.Find("Btn" + i + "-" + j + "/Text");
-                if(sgnum[i-1,j-1]!=9 && sgnum[i-1,j-1]!=-9){BtnTxtGot.GetComponent<Text>().text = ""+sgnum[i-1,j-1];}
-                if(sgnum[i-1,j-1]==9)
-                {
-                    BtnGot.GetComponent<Image>().color = Color.red;
-                    BtnTxtGot.GetComponent<Text>().text = "●";
-                }
-                if(sgnum[i-1,j-1]==-9)
-                {
-                    BtnGot.GetComponent<Image>().color = Color.cyan;
-                    BtnTxtGot.GetComponent<Text>().text = "●";
-                }
+                CheckBtnStatus(i, j);
+                sgmap[i,j] = 2;
             }
         }
     }
 
+    public void CheckBtnStatus(int i, int j)
+    {
+        GameObject BtnGot = GameObject.Find("Btn" + (i+1) + "-" + (j+1));
+        GameObject BtnTxtGot = GameObject.Find("Btn" + (i+1) + "-" + (j+1) + "/Text");
+        if (sgnum[i,j]<9 && sgnum[i,j]>0)
+        {
+            Color BtnColor = new Color(1f, 1f-sgnum[i,j]/8f, 1f-sgnum[i,j]/8f, 1f);
+            BtnGot.GetComponent<Image>().color = BtnColor;
+            BtnTxtGot.GetComponent<Text>().text = ""+sgnum[i,j];
+        }
+        if (sgnum[i,j]>-9 && sgnum[i,j]<0)
+        {
+            Color BtnColor = new Color(1f+sgnum[i,j]/8f, 1f, 1f, 1f);
+            BtnGot.GetComponent<Image>().color = BtnColor;
+            BtnTxtGot.GetComponent<Text>().text = ""+sgnum[i,j];
+        }
+        if (sgnum[i,j]==0)
+        {
+            BtnGot.GetComponent<Image>().color = Color.white;
+            BtnTxtGot.GetComponent<Text>().text = "";
+            ContinueZero = true;
+        }
+        if (sgnum[i,j]==9)
+        {
+            BtnGot.GetComponent<Image>().color = Color.red;
+            BtnTxtGot.GetComponent<Text>().text = "●";
+        }
+        if (sgnum[i,j]==-9)
+        {
+            BtnGot.GetComponent<Image>().color = Color.cyan;
+            BtnTxtGot.GetComponent<Text>().text = "●";
+        }
+    }
 
+    public void CheckUDLRBtn(int i, int j)
+    {
+        if (i > 0 && Math.Abs(sgnum[i-1,j])!=9)
+        {
+            CheckBtnStatus(i-1,j);
+            sgmap[i-1,j] = 1;
+        }
+        if (i < StageNumX-1 && Math.Abs(sgnum[i+1,j])!=9)
+        {
+            CheckBtnStatus(i+1,j);
+            sgmap[i+1,j] = 1;
+        }
+        if (j > 0 && Math.Abs(sgnum[i,j-1])!=9)
+        {
+            CheckBtnStatus(i,j-1);
+            sgmap[i,j-1] = 1;
+        }
+        if (j < StageNumY-1 && Math.Abs(sgnum[i,j+1])!=9)
+        {
+            CheckBtnStatus(i,j+1);
+            sgmap[i,j+1] = 1;
+        }
 
+        if (i > 0 && j > 0 && Math.Abs(sgnum[i-1,j-1])!=9)
+        {
+            CheckBtnStatus(i-1,j-1);
+            sgmap[i-1,j-1] = 1;
+        }
+        if (i < StageNumX-1 && j < StageNumY-1 && Math.Abs(sgnum[i+1,j+1])!=9)
+        {
+            CheckBtnStatus(i+1,j+1);
+            sgmap[i+1,j+1] = 1;
+        }
+        if (i < StageNumX-1 && j > 0 && Math.Abs(sgnum[i+1,j-1])!=9)
+        {
+            CheckBtnStatus(i+1,j-1);
+            sgmap[i+1,j-1] = 1;
+        }
+        if (i > 0 && j < StageNumY-1 && Math.Abs(sgnum[i-1,j+1])!=9)
+        {
+            CheckBtnStatus(i-1,j+1);
+            sgmap[i-1,j+1] = 1;
+        }
+    }
 
+    void Update()
+    {
+        //若ContinueZero是開啟的，表示可能仍有位置數值為0
+        if (ContinueZero == true)
+        {
+            ContinueZero = false;
+            for (int i = 0; i < StageNumX; i++)
+            {
+                for (int j = 0; j < StageNumY; j++)
+                {
+                    if (sgmap[i,j] == 1 && sgnum[i,j] == 0)
+                    {
+                    sgopnbtn[i,j] = 1;
+                    }
+                }
+            }
+
+            for (int i = 0; i < StageNumX; i++)
+            {
+                for (int j = 0; j < StageNumY; j++)
+                {
+                    if (sgopnbtn[i,j] == 1)
+                    {
+                    CheckUDLRBtn(i, j);
+                    sgopnbtn[i,j] = 0;
+                    sgmap[i,j] = 2;
+                    }
+                }
+            }
+        }
+
+    }
 
 }
