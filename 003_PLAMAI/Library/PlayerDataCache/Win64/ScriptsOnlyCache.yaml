@@ -1,6 +1,7 @@
 ScriptsOnlyBuild:
   usedScripts:
     Assembly-CSharp.dll:
+    - BtnHover
     - Stage
     - WindowControl
     Unity.2D.Animation.Editor.dll:
@@ -60,23 +61,25 @@ ScriptsOnlyBuild:
     - Class: 114
       Script: {instanceID: 1458}
     - Class: 114
-      Script: {instanceID: 2254}
+      Script: {instanceID: 1672}
     - Class: 114
-      Script: {instanceID: 2680}
+      Script: {instanceID: 2258}
     - Class: 114
-      Script: {instanceID: 2852}
+      Script: {instanceID: 2684}
     - Class: 114
-      Script: {instanceID: 3088}
+      Script: {instanceID: 2856}
     - Class: 114
-      Script: {instanceID: 3146}
+      Script: {instanceID: 3092}
     - Class: 114
-      Script: {instanceID: 3334}
+      Script: {instanceID: 3150}
     - Class: 114
-      Script: {instanceID: 3454}
+      Script: {instanceID: 3338}
     - Class: 114
-      Script: {instanceID: 3968}
+      Script: {instanceID: 3458}
     - Class: 114
-      Script: {instanceID: 25024}
+      Script: {instanceID: 3972}
+    - Class: 114
+      Script: {instanceID: 4358}
     - Class: 115
       Script: {instanceID: 0}
     - Class: 128
@@ -142,6 +145,12 @@ ScriptsOnlyBuild:
     assemblyName: UnityEngine.UI.dll
     namespaceName: UnityEngine.UI
     className: LayoutElement
+  - hash:
+      serializedVersion: 2
+      Hash: 71bb6a6b6c8f052f948db64c7dd3ca4f
+    assemblyName: Assembly-CSharp.dll
+    namespaceName: 
+    className: WindowControl
   - hash:
       serializedVersion: 2
       Hash: 6bc76e17f0d5e93f3eea7f5a2fe227f3
@@ -390,7 +399,7 @@ ScriptsOnlyBuild:
     className: BaseInput
   - hash:
       serializedVersion: 2
-      Hash: afa0137c969d75bc8d4d61ec24acbb4a
+      Hash: 2907d5929bd4e89b6824b45f1cca5730
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: Stage
@@ -460,6 +469,12 @@ ScriptsOnlyBuild:
     assemblyName: Unity.Timeline.dll
     namespaceName: UnityEngine.Timeline
     className: ActivationTrack
+  - hash:
+      serializedVersion: 2
+      Hash: 71bb6a6b6c8f052f948db64c7dd3ca4f
+    assemblyName: Assembly-CSharp.dll
+    namespaceName: 
+    className: BtnHover
   - hash:
       serializedVersion: 2
       Hash: 0edeba255bdbade25edc357f1412ba38
@@ -610,12 +625,6 @@ ScriptsOnlyBuild:
     assemblyName: Unity.2D.IK.Runtime.dll
     namespaceName: UnityEngine.U2D.IK
     className: FabrikSolver2D
-  - hash:
-      serializedVersion: 2
-      Hash: 71bb6a6b6c8f052f948db64c7dd3ca4f
-    assemblyName: Assembly-CSharp.dll
-    namespaceName: 
-    className: WindowControl
   platform: 19
   scenePathNames:
   - Assets/Scenes/SampleScene.unity

@@ -13,6 +13,7 @@ public class Stage : MonoBehaviour
     public InputField InputFieldY;
     public InputField InputFieldMinePlus;
     public InputField InputFieldMineMinus;
+    public GameObject BtnCheckAns;
     public Text uiText;
     [SerializeField] int[,] sgmine = new int[100,100]; //stage mine，1:正電地雷 -1:負電地雷
     [SerializeField] int[,] sgnum = new int[100,100]; //stage number，9:正電地雷 -9:負電地雷 0:附近沒地雷 其他:附近有幾個地雷(正負相消)
@@ -25,23 +26,32 @@ public class Stage : MonoBehaviour
     [SerializeField] int stagephase = 0;
     [SerializeField] int SelectX;
     [SerializeField] int SelectY;
+    [SerializeField] int ScnX;
+    [SerializeField] int ScnY;
     public static int HoverX;
     public static int HoverY;
     public static bool MouseDownOnBtn = false;
     public bool MouseDownLeft = false;
     public bool MouseDownRight = false;
+    public bool CreateBtnFlag = false;
     [SerializeField] bool ContinueZero = false;
+    [SerializeField] int WrongAns = 0;
 
     void Start()
     {
         //顯示開啟時的視窗大小
         uiText.text = "視窗大小:\nWidth=" + Screen.width + ", Height=" + Screen.height + "\n" + uiText.text;
+        BtnCheckAns.GetComponent<Button>().interactable = false;
     }
 
     public void CrtBtn()
     {
-        //回歸關卡階段到0
+        //回歸關卡階段到0，其餘回歸預設值
         stagephase = 0;
+        WrongAns = 0;
+        InputFieldMinePlus.interactable = true;
+        InputFieldMineMinus.interactable = true;
+        BtnCheckAns.GetComponent<Button>().interactable = true;
         uiText.text = "<color=magenta>創建關卡</color>\n視窗大小:\nWidth=" + Screen.width + ", Height=" + Screen.height;
 
         //移除所有已創建的Btn
@@ -101,6 +111,9 @@ public class Stage : MonoBehaviour
                 CrtBtnLp(i,j);
             }
         }
+
+        //豎起創建Btn的旗幟
+        CreateBtnFlag = true;
 
     }
 
@@ -194,7 +207,11 @@ public class Stage : MonoBehaviour
 
             //轉換關卡階段到1
             stagephase = 1;
+
         }
+
+        if (stagephase == 1 && InputFieldMinePlus.interactable) {InputFieldMinePlus.interactable = false;}
+        if (stagephase == 1 && InputFieldMineMinus.interactable) {InputFieldMineMinus.interactable = false;}
 
         //關卡階段1的情況下點擊尚未開啟的Btn，則翻開該Btn
         if (stagephase == 1 && sgmap[SelectX,SelectY] == 0 && Math.Abs(sgnum[SelectX,SelectY]) != 9)
@@ -287,6 +304,32 @@ public class Stage : MonoBehaviour
         }
     }
 
+    //進入答案確認模式
+    public void CheckBtnAnswer()
+    {
+        uiText.text = "<color=magenta>檢查答案中...</color>\n" + uiText.text;
+        int CountMPlus = 0;
+        int CountMMinus = 0;
+        for (int i = 0; i < StageNumX; i++)
+        {
+            for (int j = 0; j < StageNumY; j++)
+            {
+                if (sgmap[i,j] == -1) {CountMPlus++;}
+                if (sgmap[i,j] == -2) {CountMMinus++;}
+            }
+        }
+        uiText.text = "<color=magenta>目前標註正電地雷" + CountMPlus + "顆、負電地雷" + CountMMinus + "顆</color>\n" + uiText.text;
+        if (StageNumMPlus != CountMPlus || StageNumMMinus != CountMMinus)
+        {
+            uiText.text = "<color=magenta>地雷數目有誤！</color>\n" + uiText.text;
+        }
+        else
+        {
+            RevealMine();
+            if (WrongAns > 0) {uiText.text = "<color=magenta>糟了，解答失敗！錯誤" + WrongAns + "處</color>\n" + uiText.text;}
+            else {uiText.text = "<color=white>恭喜！您成功解除地雷了！</color>\n" + uiText.text;}
+        }
+    }
 
     //填入地雷
     public void AddMine(int MineType, int SelectX, int SelectY)
@@ -312,6 +355,7 @@ public class Stage : MonoBehaviour
     //顯示地雷
     public void RevealMine()
     {
+        BtnCheckAns.GetComponent<Button>().interactable = false;
         for (int i = 0; i < StageNumX; i++)
         {
             for (int j = 0; j < StageNumY; j++)
@@ -357,6 +401,7 @@ public class Stage : MonoBehaviour
         if ((sgnum[i,j]!=9 && sgmap[i,j]==-1) || (sgnum[i,j]!=-9 && sgmap[i,j]==-2))
         {
             BtnTxtGot.GetComponent<Text>().text = "╳";
+            WrongAns++;
         }
     }
 
@@ -442,9 +487,31 @@ public class Stage : MonoBehaviour
             }
         }
 
+        //偵測螢幕大小是否變更
+        if ((ScnX != Screen.width || ScnY != Screen.height) && CreateBtnFlag)
+        {
+            //移除所有已創建的Btn
+            for (int i = 1; i <= 100; i++)
+            {
+                for (int j = 1; j <= 100; j++)
+                {
+                    Destroy(GameObject.Find("Btn" + i + "-" + j));
+                    sgmine[i-1,j-1] = 0;
+                    sgnum[i-1,j-1] = 0;
+                    sgmap[i-1,j-1] = 0;
+                    sgopnbtn[i-1,j-1] = 0;
+                }
+            }
+            BtnCheckAns.GetComponent<Button>().interactable = false;
+            CreateBtnFlag = false;
+        }
+
         //偵測滑鼠左右鍵是否被彈起
         if (Input.GetMouseButtonUp(0)) {MouseDownLeft = false; MouseDownOnBtn = false;}
         if (Input.GetMouseButtonUp(1)) {MouseDownRight = false; MouseDownOnBtn = false;}
+        //儲存變更的螢幕大小
+        ScnX = Screen.width;
+        ScnY = Screen.height;
 
     }
 
