@@ -14,25 +14,35 @@ public class Stage : MonoBehaviour
     public InputField InputFieldMinePlus;
     public InputField InputFieldMineMinus;
     public Text uiText;
-    int[,] sgmine = new int[100,100]; //stage mine，1:正電地雷 -1:負電地雷
-    int[,] sgnum = new int[100,100]; //stage number，9:正電地雷 -9:負電地雷 0:附近沒地雷 其他:附近有幾個地雷(正負相消)
-    int[,] sgmap = new int[100,100]; //stage map，0:未開 1:剛踩探測是否為0 2:確認為0、其他數字或地雷
-    int[,] sgopnbtn = new int[100,100]; //stage open button，記憶可以開啟的複數位置，0:沒有 1:有
-    int StageNumX;
-    int StageNumY;
-    int StageNumMPlus;
-    int StageNumMMinus;
-    int stagephase = 0;
-    int SelectX;
-    int SelectY;
-    bool ContinueZero = false;
-    int stageTm = 0;
+    [SerializeField] int[,] sgmine = new int[100,100]; //stage mine，1:正電地雷 -1:負電地雷
+    [SerializeField] int[,] sgnum = new int[100,100]; //stage number，9:正電地雷 -9:負電地雷 0:附近沒地雷 其他:附近有幾個地雷(正負相消)
+    [SerializeField] int[,] sgmap = new int[100,100]; //stage map，0:未開 1:剛踩探測是否為0 2:確認為0、其他數字或地雷
+    [SerializeField] int[,] sgopnbtn = new int[100,100]; //stage open button，記憶可以開啟的複數位置，0:沒有 1:有
+    [SerializeField] int StageNumX;
+    [SerializeField] int StageNumY;
+    [SerializeField] int StageNumMPlus;
+    [SerializeField] int StageNumMMinus;
+    [SerializeField] int stagephase = 0;
+    [SerializeField] int SelectX;
+    [SerializeField] int SelectY;
+    public static int HoverX;
+    public static int HoverY;
+    public static bool MouseDownOnBtn = false;
+    public bool MouseDownLeft = false;
+    public bool MouseDownRight = false;
+    [SerializeField] bool ContinueZero = false;
+
+    void Start()
+    {
+        //顯示開啟時的視窗大小
+        uiText.text = "視窗大小:\nWidth=" + Screen.width + ", Height=" + Screen.height + "\n" + uiText.text;
+    }
 
     public void CrtBtn()
     {
-
         //回歸關卡階段到0
         stagephase = 0;
+        uiText.text = "<color=magenta>創建關卡</color>\n視窗大小:\nWidth=" + Screen.width + ", Height=" + Screen.height;
 
         //移除所有已創建的Btn
         for (int i = 1; i <= 100; i++)
@@ -97,27 +107,20 @@ public class Stage : MonoBehaviour
 
     public void CrtBtnLp(int i, int j)
     {
-        Vector3 myVector = Canvas.transform.position + new Vector3(30*i-StageNumX*15-15, StageNumY*15-30*j+15, 0);
+        Vector3 myVector = Canvas.transform.position + new Vector3(Screen.width*0.6f/30f*i-(StageNumX+1)*Screen.width*0.6f/60f, (StageNumY+1)*Screen.height*0.98f/50f-j*Screen.height*0.98f/25f, 0);
         GameObject Clone;
         Clone = (GameObject)Instantiate(Btn, myVector, new Quaternion(), BtnZone.transform);
         Clone.GetComponent<Image>().color = Color.gray;
         Clone.name = "Btn" + i + "-" + j;
     }
 
-    public void BtnPress(GameObject GameObject)
+    public void BtnPress()
     {
-        //從按下按鈕的名稱擷取Btn位於array的位置
-        string str = GameObject.name;
-        str = str.Remove(0,3);
-        string[] strAry = str.Split('-');
-        SelectX = int.Parse(strAry[0])-1;
-        SelectY = int.Parse(strAry[1])-1;
-        uiText.text = "選取了 (" + SelectX + "," + SelectY + ")";
-
+        SelectX = HoverX;
+        SelectY = HoverY;
         //當所有Btn按鈕都未被按的時候，第一個Btn按下必不為地雷，同時設定所有地雷位置
         if (stagephase == 0)
         {
-
             bool StageBoolMPlus = int.TryParse(InputFieldMinePlus.text, out StageNumMPlus);
             bool StageBoolMMinus = int.TryParse(InputFieldMineMinus.text, out StageNumMMinus);
 
@@ -194,17 +197,96 @@ public class Stage : MonoBehaviour
         }
 
         //關卡階段1的情況下點擊尚未開啟的Btn，則翻開該Btn
-        if (stagephase == 1 && sgmap[SelectX,SelectY] == 0)
+        if (stagephase == 1 && sgmap[SelectX,SelectY] == 0 && Math.Abs(sgnum[SelectX,SelectY]) != 9)
         {
+            uiText.text = "<color=green>踩開</color>了 <color=yellow>(" + SelectX + "," + SelectY + ")</color>\n" + uiText.text;
             sgmap[SelectX,SelectY] = 1;
             CheckBtnStatus(SelectX, SelectY);
             if (sgnum[SelectX,SelectY] == 0) {ContinueZero = true;}
         }
 
-        //Btn陣列顯示所有地雷
-        //RevealMine();
+        if (stagephase == 1 && sgmap[SelectX,SelectY] == 0 && Math.Abs(sgnum[SelectX,SelectY]) == 9)
+        {
+            uiText.text = "<color=magenta>糟了，是地雷！</color>\n" + uiText.text;
+            //Btn陣列顯示所有地雷
+            RevealMine();
+            stagephase = 2;
+        }
 
     }
+
+    public void BtnPredict()
+    {
+        SelectX = HoverX;
+        SelectY = HoverY;
+
+        bool renew = false;
+        if (sgmap[SelectX,SelectY] == 0 && !renew)
+        {
+            sgmap[SelectX,SelectY] = -1;
+            uiText.text = "我<color=green>猜</color> <color=yellow>(" + SelectX + "," + SelectY + ")</color> 是<color=red>正電地雷</color>\n" + uiText.text;
+            GameObject BtnTxtGot = GameObject.Find("Btn" + (SelectX+1) + "-" + (SelectY+1) + "/Text");
+            BtnTxtGot.GetComponent<Text>().text = "正";
+            renew = true;
+        }
+        if (sgmap[SelectX,SelectY] == -1 && !renew)
+        {
+            sgmap[SelectX,SelectY] = -2;
+            uiText.text = "我<color=green>猜</color> <color=yellow>(" + SelectX + "," + SelectY + ")</color> 是<color=cyan>負電地雷</color>\n" + uiText.text;
+            GameObject BtnTxtGot = GameObject.Find("Btn" + (SelectX+1) + "-" + (SelectY+1) + "/Text");
+            BtnTxtGot.GetComponent<Text>().text = "負";
+            renew = true;
+        }
+        if (sgmap[SelectX,SelectY] == -2 && !renew)
+        {
+            sgmap[SelectX,SelectY] = -3;
+            uiText.text = "我<color=blue>不知道</color> <color=yellow>(" + SelectX + "," + SelectY + ")</color> 是什麼..\n" + uiText.text;
+            GameObject BtnTxtGot = GameObject.Find("Btn" + (SelectX+1) + "-" + (SelectY+1) + "/Text");
+            BtnTxtGot.GetComponent<Text>().text = "？";
+            renew = true;
+        }
+        if (sgmap[SelectX,SelectY] == -3 && !renew)
+        {
+            sgmap[SelectX,SelectY] = 0;
+            GameObject BtnTxtGot = GameObject.Find("Btn" + (SelectX+1) + "-" + (SelectY+1) + "/Text");
+            BtnTxtGot.GetComponent<Text>().text = "";
+            renew = true;
+        }
+
+    }
+
+    public void BtnEightCheck()
+    {
+        SelectX = HoverX;
+        SelectY = HoverY;
+        //設定array確認的八個方位的Btn，數值分別為{x,y,check-or-not}
+        int[,] EightCheck = new int[8, 3] {{1,0,1},{1,-1,1},{0,-1,1},{-1,-1,1},{-1,0,1},{-1,1,1},{0,1,1},{1,1,1}};
+        int minenum = 0;
+        for (int i = 0; i < 8; i++)
+        {
+            if ((EightCheck[i,0]+SelectX < 0) || (EightCheck[i,0]+SelectX >= StageNumX) || (EightCheck[i,1]+SelectY < 0) || (EightCheck[i,1]+SelectY >= StageNumY))
+            {
+                EightCheck[i,2] = 0;
+            }
+            if (EightCheck[i,2]==1)
+            {
+                if (sgmap[SelectX+EightCheck[i,0], SelectY+EightCheck[i,1]] == -1)
+                {
+                    minenum++;
+                }
+                if (sgmap[SelectX+EightCheck[i,0], SelectY+EightCheck[i,1]] == -2)
+                {
+                    minenum--;
+                }
+            }
+        }
+        if (sgnum[SelectX, SelectY]==minenum)
+        {
+            uiText.text = "<color=green>展開</color> <color=yellow>(" + SelectX + "," + SelectY + ")</color> 附近格子\n" + uiText.text;
+            CheckUDLRBtn(SelectX, SelectY, true);
+        }
+    }
+
 
     //填入地雷
     public void AddMine(int MineType, int SelectX, int SelectY)
@@ -272,55 +354,65 @@ public class Stage : MonoBehaviour
             BtnGot.GetComponent<Image>().color = Color.cyan;
             BtnTxtGot.GetComponent<Text>().text = "●";
         }
+        if ((sgnum[i,j]!=9 && sgmap[i,j]==-1) || (sgnum[i,j]!=-9 && sgmap[i,j]==-2))
+        {
+            BtnTxtGot.GetComponent<Text>().text = "╳";
+        }
     }
 
-    public void CheckUDLRBtn(int i, int j)
+    public void CheckUDLRBtn(int CheckX, int CheckY, bool CheckEightBtn)
     {
-        if (i > 0 && Math.Abs(sgnum[i-1,j])!=9)
+        int[,] EightCheck = new int[8, 3] {{1,0,1},{1,-1,1},{0,-1,1},{-1,-1,1},{-1,0,1},{-1,1,1},{0,1,1},{1,1,1}};
+        for (int i = 0; i < 8; i++)
         {
-            CheckBtnStatus(i-1,j);
-            sgmap[i-1,j] = 1;
-        }
-        if (i < StageNumX-1 && Math.Abs(sgnum[i+1,j])!=9)
-        {
-            CheckBtnStatus(i+1,j);
-            sgmap[i+1,j] = 1;
-        }
-        if (j > 0 && Math.Abs(sgnum[i,j-1])!=9)
-        {
-            CheckBtnStatus(i,j-1);
-            sgmap[i,j-1] = 1;
-        }
-        if (j < StageNumY-1 && Math.Abs(sgnum[i,j+1])!=9)
-        {
-            CheckBtnStatus(i,j+1);
-            sgmap[i,j+1] = 1;
-        }
-
-        if (i > 0 && j > 0 && Math.Abs(sgnum[i-1,j-1])!=9)
-        {
-            CheckBtnStatus(i-1,j-1);
-            sgmap[i-1,j-1] = 1;
-        }
-        if (i < StageNumX-1 && j < StageNumY-1 && Math.Abs(sgnum[i+1,j+1])!=9)
-        {
-            CheckBtnStatus(i+1,j+1);
-            sgmap[i+1,j+1] = 1;
-        }
-        if (i < StageNumX-1 && j > 0 && Math.Abs(sgnum[i+1,j-1])!=9)
-        {
-            CheckBtnStatus(i+1,j-1);
-            sgmap[i+1,j-1] = 1;
-        }
-        if (i > 0 && j < StageNumY-1 && Math.Abs(sgnum[i-1,j+1])!=9)
-        {
-            CheckBtnStatus(i-1,j+1);
-            sgmap[i-1,j+1] = 1;
+            if ((EightCheck[i,0]+CheckX < 0) || (EightCheck[i,0]+CheckX >= StageNumX) || (EightCheck[i,1]+CheckY < 0) || (EightCheck[i,1]+CheckY >= StageNumY))
+            {
+                EightCheck[i,2] = 0;
+            }
+            if (EightCheck[i,2]==1 && sgmap[CheckX+EightCheck[i,0],CheckY+EightCheck[i,1]]==0)
+            {
+                int NowBtnNum = sgnum[CheckX+EightCheck[i,0],CheckY+EightCheck[i,1]];
+                if (Math.Abs(NowBtnNum)!=9)
+                {
+                    CheckBtnStatus(CheckX+EightCheck[i,0],CheckY+EightCheck[i,1]);
+                    sgmap[CheckX+EightCheck[i,0],CheckY+EightCheck[i,1]] = 1;
+                }
+                else if (CheckEightBtn && Math.Abs(NowBtnNum)==9)
+                {
+                    uiText.text = "<color=magenta>糟了，是地雷！</color>\n" + uiText.text;
+                    RevealMine();
+                    stagephase = 2;
+                }
+            }
         }
     }
 
+    //遊戲中每幀更新內容
     void Update()
     {
+
+        //偵測滑鼠左右鍵是否被按下
+        if (Input.GetMouseButtonDown(0)) {MouseDownLeft = true;}
+        if (Input.GetMouseButtonDown(1)) {MouseDownRight = true;}
+
+        //若單純只有滑鼠左鍵按下彈起，則點開該Btn內容物
+        if (Input.GetMouseButtonUp(0) && MouseDownLeft && !MouseDownRight && MouseDownOnBtn && HoverX != -1 && HoverY != -1)
+        {
+            BtnPress();
+        }
+
+        //若單純只有滑鼠右鍵按下彈起，則開關預測可能為地雷的功能
+        if (Input.GetMouseButtonUp(1) && !MouseDownLeft && MouseDownRight && MouseDownOnBtn && HoverX != -1 && HoverY != -1)
+        {
+            BtnPredict();
+        }
+
+        //若滑鼠右鍵與滑鼠右鍵同時按下並且其中一鍵彈起，則確認附近8格Btn預測地雷數與點下Btn數值是否相同，進而開拓其他位置的Btn
+        if ((Input.GetMouseButtonUp(0)||Input.GetMouseButtonUp(1)) && stagephase == 1 && MouseDownLeft && MouseDownRight && MouseDownOnBtn && HoverX != -1 && HoverY != -1)
+        {
+            BtnEightCheck();
+        }
+
         //若ContinueZero是開啟的，表示可能仍有位置數值為0
         if (ContinueZero == true)
         {
@@ -342,13 +434,17 @@ public class Stage : MonoBehaviour
                 {
                     if (sgopnbtn[i,j] == 1)
                     {
-                    CheckUDLRBtn(i, j);
+                    CheckUDLRBtn(i, j, false);
                     sgopnbtn[i,j] = 0;
                     sgmap[i,j] = 2;
                     }
                 }
             }
         }
+
+        //偵測滑鼠左右鍵是否被彈起
+        if (Input.GetMouseButtonUp(0)) {MouseDownLeft = false; MouseDownOnBtn = false;}
+        if (Input.GetMouseButtonUp(1)) {MouseDownRight = false; MouseDownOnBtn = false;}
 
     }
 
