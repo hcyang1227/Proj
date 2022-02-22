@@ -399,7 +399,7 @@ ScriptsOnlyBuild:
     className: BaseInput
   - hash:
       serializedVersion: 2
-      Hash: 2907d5929bd4e89b6824b45f1cca5730
+      Hash: f65ab1495a327d06250a0751803967c0
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: Stage
@@ -628,4 +628,4 @@ ScriptsOnlyBuild:
   platform: 19
   scenePathNames:
   - Assets/Scenes/SampleScene.unity
-  playerPath: C:/Users/hcyan/Desktop/PLAMAI/003_PLAMAI.exe
+  playerPath: C:/Users/hcyan/Desktop/003_PLAMAI V0.1.1/003_PLAMAI.exe

@@ -4,8 +4,8 @@ using UnityEngine;
 
 public class WindowControl : MonoBehaviour
 {
-    int minWidth = 1578;
-    int minHeight = 775;
+    int minWidth = 394;
+    int minHeight = 238;
     
     void Update()
     {
