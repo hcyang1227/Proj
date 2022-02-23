@@ -44,6 +44,8 @@ public class Stage : MonoBehaviour
     public static bool MouseDownOnBtn = false;
     public bool MouseDownLeft = false;
     public bool MouseDownRight = false;
+    public bool KeyDownLeft = false;
+    public bool KeyDownRight = false;
     public bool CreateBtnFlag = false;
     [SerializeField] bool ContinueZero = false;
     [SerializeField] int WrongAns = 0;
@@ -152,10 +154,10 @@ public class Stage : MonoBehaviour
         Clone.name = "Btn" + i + "-" + j;
     }
 
-    public void BtnPress()
+    public void BtnPress(int X, int Y)
     {
-        SelectX = HoverX;
-        SelectY = HoverY;
+        SelectX = X;
+        SelectY = Y;
         //當所有Btn按鈕都未被按的時候，第一個Btn按下必不為地雷，同時設定所有地雷位置
         if (stagephase == 0)
         {
@@ -484,11 +486,17 @@ public class Stage : MonoBehaviour
     [SerializeField] float KeyDownTm = 0f;
     [SerializeField] float KeyLeftTm = 0f;
     [SerializeField] float KeyRightTm = 0f;
+    [SerializeField] float KeyUpTm2 = 0.3f;
+    [SerializeField] float KeyDownTm2 = 0.3f;
+    [SerializeField] float KeyLeftTm2 = 0.3f;
+    [SerializeField] float KeyRightTm2 = 0.3f;
     [SerializeField] bool KeyUpFg = false;
     [SerializeField] bool KeyDownFg = false;
     [SerializeField] bool KeyLeftFg = false;
     [SerializeField] bool KeyRightFg = false;
-    [SerializeField] int FramePos = 0; //Frame的位置，0:棋盤格位置 1:右上設置 2.右下設置
+    [SerializeField] bool KeySpaceFg = false;
+    [SerializeField] int FramePos = 0; //Frame的位置，0:棋盤格位置 1:右上設置 2:右下設置
+    [SerializeField] int FramePos2 = 0; //Frame的右上位置，0:X格數 1:Y格數 2:創建關卡 3:正電地雷 4:負電地雷
     [SerializeField] int FramePosX = 0;
     [SerializeField] int FramePosY = 0;
 
@@ -496,55 +504,150 @@ public class Stage : MonoBehaviour
     void Update()
     {
 
-        FrameAni.Play("FrameS");
+        //抓取鍵盤按Space的動作
+        if (Input.GetKeyDown("tab")) {KeySpaceFg = true;}
+        if (Input.GetKeyUp("tab"))
+        {
+            if (FramePos == 0 && KeySpaceFg) {FramePos = 1; KeySpaceFg = false; FrameAni.Play("FrameM"); FramePos2=0;}
+            if (FramePos == 1 && (KeySpaceFg || !ControllerEnable)) {FramePos = 2; KeySpaceFg = false; FrameAni.Play("FrameL");}
+            if (FramePos == 2 && KeySpaceFg)
+            {
+                FramePos = 0;
+                KeySpaceFg = false;
+                FrameAni.Play("FrameS");
+                Frame.transform.position = Canvas.transform.position + new Vector3(Screen.width*0.6f/30f*(FramePosX+1)-(StageNumX+1)*Screen.width*0.6f/60f, (StageNumY+1)*Screen.height*0.98f/50f-(FramePosY+1)*Screen.height*0.98f/25f, 0);
+            }
+        }
         //抓取鍵盤上下左右的動作
-        if (Input.GetKeyDown("up")) {KeyUpTm += Time.deltaTime;}
-        if (Input.GetKeyDown("down")) {KeyDownTm += Time.deltaTime;}
-        if (Input.GetKeyDown("Horizontal")) {KeyLeftTm += Time.deltaTime;}
-        if (Input.GetKeyDown("right")) {KeyRightTm += Time.deltaTime;}
-        if (Input.GetKeyUp("up")) {KeyUpTm = 0; KeyUpFg = false;}
-        if (Input.GetKeyUp("down")) {KeyDownTm = 0; KeyDownFg = false;}
-        if (Input.GetKeyUp("left")) {KeyLeftTm = 0; KeyLeftFg = false;}
-        if (Input.GetKeyUp("right")) {KeyRightTm = 0; KeyRightFg = false;}
-        //如果上下左右被按下，按鍵又在格子處，則變更Frame的位置
-        if (KeyUpTm > 0 && !KeyUpFg && FramePos == 0 && FramePosY > 0)
+        if (Input.GetKey("up") || Input.GetKey("w")) {KeyUpTm += Time.deltaTime;}
+        if (Input.GetKey("down") || Input.GetKey("s")) {KeyDownTm += Time.deltaTime;}
+        if (Input.GetKey("left") || Input.GetKey("a")) {KeyLeftTm += Time.deltaTime;}
+        if (Input.GetKey("right") || Input.GetKey("d")) {KeyRightTm += Time.deltaTime;}
+        if (Input.GetKeyUp("up") || Input.GetKeyUp("w")) {KeyUpTm = 0f; KeyUpTm2 = 0.3f; KeyUpFg = false;}
+        if (Input.GetKeyUp("down") || Input.GetKeyUp("s")) {KeyDownTm = 0f; KeyDownTm2 = 0.3f; KeyDownFg = false;}
+        if (Input.GetKeyUp("left") || Input.GetKeyUp("a")) {KeyLeftTm = 0f; KeyLeftTm2 = 0.3f; KeyLeftFg = false;}
+        if (Input.GetKeyUp("right") || Input.GetKeyUp("d")) {KeyRightTm = 0f; KeyRightTm2 = 0.3f; KeyRightFg = false;}
+        //如果上下左右被按下，則變更Frame的位置(在棋盤格時)
+        if (KeyUpTm > 0f && !KeyUpFg && FramePos == 0 && FramePosY > 0)
         {
             FramePosY--;
             KeyUpFg = true;
             Frame.transform.position = Canvas.transform.position + new Vector3(Screen.width*0.6f/30f*(FramePosX+1)-(StageNumX+1)*Screen.width*0.6f/60f, (StageNumY+1)*Screen.height*0.98f/50f-(FramePosY+1)*Screen.height*0.98f/25f, 0);
         }
-        if (KeyDownTm > 0 && !KeyDownFg && FramePos == 0 && FramePosY < StageNumY-1)
+        if (KeyDownTm > 0f && !KeyDownFg && FramePos == 0 && FramePosY < StageNumY-1)
         {
             FramePosY++;
             KeyDownFg = true;
             Frame.transform.position = Canvas.transform.position + new Vector3(Screen.width*0.6f/30f*(FramePosX+1)-(StageNumX+1)*Screen.width*0.6f/60f, (StageNumY+1)*Screen.height*0.98f/50f-(FramePosY+1)*Screen.height*0.98f/25f, 0);
         }
-        if (KeyLeftTm > 0 && !KeyLeftFg && FramePos == 0 && FramePosX > 0)
+        if (KeyLeftTm > 0f && !KeyLeftFg && FramePos == 0 && FramePosX > 0)
         {
             FramePosX--;
             KeyLeftFg = true;
             Frame.transform.position = Canvas.transform.position + new Vector3(Screen.width*0.6f/30f*(FramePosX+1)-(StageNumX+1)*Screen.width*0.6f/60f, (StageNumY+1)*Screen.height*0.98f/50f-(FramePosY+1)*Screen.height*0.98f/25f, 0);
         }
-        if (KeyRightTm > 0 && !KeyRightFg && FramePos == 0 && FramePosX < StageNumX-1)
+        if (KeyRightTm > 0f && !KeyRightFg && FramePos == 0 && FramePosX < StageNumX-1)
         {
             FramePosX++;
             KeyRightFg = true;
             Frame.transform.position = Canvas.transform.position + new Vector3(Screen.width*0.6f/30f*(FramePosX+1)-(StageNumX+1)*Screen.width*0.6f/60f, (StageNumY+1)*Screen.height*0.98f/50f-(FramePosY+1)*Screen.height*0.98f/25f, 0);
+        }
+        if (KeyUpTm > 0.3f && KeyUpTm > KeyUpTm2+0.1f && FramePos == 0 && FramePosY > 0)
+        {
+            FramePosY--;
+            KeyUpTm2 = KeyUpTm2+0.1f;
+            Frame.transform.position = Canvas.transform.position + new Vector3(Screen.width*0.6f/30f*(FramePosX+1)-(StageNumX+1)*Screen.width*0.6f/60f, (StageNumY+1)*Screen.height*0.98f/50f-(FramePosY+1)*Screen.height*0.98f/25f, 0);
+        }
+        if (KeyDownTm > 0.3f && KeyDownTm > KeyDownTm2+0.1f && FramePos == 0 && FramePosY < StageNumY-1)
+        {
+            FramePosY++;
+            KeyDownTm2 = KeyDownTm2+0.1f;
+            Frame.transform.position = Canvas.transform.position + new Vector3(Screen.width*0.6f/30f*(FramePosX+1)-(StageNumX+1)*Screen.width*0.6f/60f, (StageNumY+1)*Screen.height*0.98f/50f-(FramePosY+1)*Screen.height*0.98f/25f, 0);
+        }
+        if (KeyLeftTm > 0.3f && KeyLeftTm > KeyLeftTm2+0.1f && FramePos == 0 && FramePosX > 0)
+        {
+            FramePosX--;
+            KeyLeftTm2 = KeyLeftTm2+0.1f;
+            Frame.transform.position = Canvas.transform.position + new Vector3(Screen.width*0.6f/30f*(FramePosX+1)-(StageNumX+1)*Screen.width*0.6f/60f, (StageNumY+1)*Screen.height*0.98f/50f-(FramePosY+1)*Screen.height*0.98f/25f, 0);
+        }
+        if (KeyRightTm > 0.3f && KeyRightTm > KeyRightTm2+0.1f && FramePos == 0 && FramePosX < StageNumX-1)
+        {
+            FramePosX++;
+            KeyRightTm2 = KeyRightTm2+0.1f;
+            Frame.transform.position = Canvas.transform.position + new Vector3(Screen.width*0.6f/30f*(FramePosX+1)-(StageNumX+1)*Screen.width*0.6f/60f, (StageNumY+1)*Screen.height*0.98f/50f-(FramePosY+1)*Screen.height*0.98f/25f, 0);
+        }
+        //如果上下左右被按下，則變更Frame的位置(在右上角輸入欄時)
+        if (KeyUpTm > 0f && !KeyUpFg && FramePos == 1)
+        {
+            FramePos2--;
+            KeyUpFg = true;
+        }
+        if (KeyDownTm > 0f && !KeyDownFg && FramePos == 1)
+        {
+            FramePos2++;
+            KeyDownFg = true;
+        }
+        if (KeyLeftTm > 0f && !KeyLeftFg && FramePos == 1)
+        {
+            FramePos2--;
+            KeyLeftFg = true;
+        }
+        if (KeyRightTm > 0f && !KeyRightFg && FramePos == 1)
+        {
+            FramePos2++;
+            KeyRightFg = true;
+        }
+        if (FramePos2 < 0) {FramePos2 = 4;}
+        if (FramePos2 > 4) {FramePos2 = 0;}
+        if (FramePos2 == 0 && FramePos == 1)
+        {
+            Frame.transform.position = InputFieldX.transform.position;
+            FrameAni.Play("FrameM");
+        }
+        if (FramePos2 == 1 && FramePos == 1)
+        {
+            Frame.transform.position = InputFieldY.transform.position;
+            FrameAni.Play("FrameM");
+        }
+        if (FramePos2 == 2 && FramePos == 1)
+        {
+            Frame.transform.position = BtnCrtStage.transform.position;
+            FrameAni.Play("FrameL");
+        }
+        if (FramePos2 == 3 && FramePos == 1)
+        {
+            Frame.transform.position = InputFieldMinePlus.transform.position;
+            FrameAni.Play("FrameM");
+        }
+        if (FramePos2 == 4 && FramePos == 1)
+        {
+            Frame.transform.position = InputFieldMineMinus.transform.position;
+            FrameAni.Play("FrameM");
+        }
+        if (FramePos == 2)
+        {
+            Frame.transform.position = BtnCheckAns.transform.position;
+            FrameAni.Play("FrameL");
         }
 
         //滑鼠游標的位置
         // Vector3 mousePos = Input.mousePosition;
         // Debug.Log(mousePos.x+", "+mousePos.y);
 
-
-        //偵測滑鼠左右鍵是否被按下
+        //偵測滑鼠左右鍵/鍵盤Space&Ctrl是否被按下
         if (Input.GetMouseButtonDown(0)) {MouseDownLeft = true;}
         if (Input.GetMouseButtonDown(1)) {MouseDownRight = true;}
+        if (Input.GetButtonDown("Jump")) {KeyDownLeft = true;}
+        if (Input.GetButtonDown("Fire1")) {KeyDownRight = true;}
 
         //若單純只有滑鼠左鍵按下彈起，則點開該Btn內容物
         if (Input.GetMouseButtonUp(0) && MouseDownLeft && !MouseDownRight && MouseDownOnBtn && HoverX != -1 && HoverY != -1)
         {
-            BtnPress();
+            BtnPress(HoverX, HoverY);
+        }
+        if (Input.GetButtonUp("Jump") && KeyDownLeft && !KeyDownRight && FramePos == 0)
+        {
+            BtnPress(FramePosX, FramePosY);
         }
 
         //若單純只有滑鼠右鍵按下彈起，則開關預測可能為地雷的功能
@@ -558,6 +661,11 @@ public class Stage : MonoBehaviour
         {
             BtnEightCheck();
         }
+
+
+
+
+
 
         //若ContinueZero是開啟的，表示可能仍有位置數值為0
         if (ContinueZero == true)
@@ -612,6 +720,8 @@ public class Stage : MonoBehaviour
         //偵測滑鼠左右鍵是否被彈起
         if (Input.GetMouseButtonUp(0)) {MouseDownLeft = false; MouseDownOnBtn = false;}
         if (Input.GetMouseButtonUp(1)) {MouseDownRight = false; MouseDownOnBtn = false;}
+        if (Input.GetButtonUp("Jump")) {KeyDownLeft = false;}
+        if (Input.GetButtonUp("Fire1")) {KeyDownRight = false;}
         //儲存變更的螢幕大小
         ScnX = Screen.width;
         ScnY = Screen.height;

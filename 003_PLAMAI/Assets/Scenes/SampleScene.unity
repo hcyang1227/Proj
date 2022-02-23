@@ -1404,6 +1404,8 @@ MonoBehaviour:
   ScnY: 0
   MouseDownLeft: 0
   MouseDownRight: 0
+  KeyDownLeft: 0
+  KeyDownRight: 0
   CreateBtnFlag: 0
   ContinueZero: 0
   WrongAns: 0
@@ -1412,11 +1414,17 @@ MonoBehaviour:
   KeyDownTm: 0
   KeyLeftTm: 0
   KeyRightTm: 0
+  KeyUpTm2: 0
+  KeyDownTm2: 0
+  KeyLeftTm2: 0
+  KeyRightTm2: 0
   KeyUpFg: 0
   KeyDownFg: 0
   KeyLeftFg: 0
   KeyRightFg: 0
+  KeySpaceFg: 0
   FramePos: 0
+  FramePos2: 0
   FramePosX: 0
   FramePosY: 0
 --- !u!114 &1249367574
@@ -2587,10 +2595,26 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 369658852927554228, guid: 42640ddaf0dae63478e8b50fc264b07e, type: 3}
       propertyPath: m_Interactable
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 369658852927554228, guid: 42640ddaf0dae63478e8b50fc264b07e, type: 3}
       propertyPath: m_Colors.m_ColorMultiplier
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 369658852927554228, guid: 42640ddaf0dae63478e8b50fc264b07e, type: 3}
+      propertyPath: m_Colors.m_DisabledColor.a
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 369658852927554228, guid: 42640ddaf0dae63478e8b50fc264b07e, type: 3}
+      propertyPath: m_Colors.m_DisabledColor.b
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 369658852927554228, guid: 42640ddaf0dae63478e8b50fc264b07e, type: 3}
+      propertyPath: m_Colors.m_DisabledColor.g
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 369658852927554228, guid: 42640ddaf0dae63478e8b50fc264b07e, type: 3}
+      propertyPath: m_Colors.m_DisabledColor.r
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 369658852927554228, guid: 42640ddaf0dae63478e8b50fc264b07e, type: 3}
@@ -2655,7 +2679,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 369658852927554231, guid: 42640ddaf0dae63478e8b50fc264b07e, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: -0.016235352
+      value: -0.016357422
       objectReference: {fileID: 0}
     - target: {fileID: 369658852927554231, guid: 42640ddaf0dae63478e8b50fc264b07e, type: 3}
       propertyPath: m_AnchoredPosition.y
