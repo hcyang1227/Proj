@@ -42,11 +42,18 @@ public class Stage : MonoBehaviour
     public int ScnY;
     public static int HoverX;
     public static int HoverY;
+    public static bool HoverCrtStage;
+    public static bool HoverCheckAns;
     public static bool MouseDownOnBtn = false;
+    public static bool MouseDownOnBtnCrtStage = false;
+    public static bool MouseDownOnBtnCheckAns = false;
     bool MouseDownLeft = false;
     bool MouseDownRight = false;
     bool KeyDownLeft = false;
     bool KeyDownRight = false;
+    bool KeyDownMPlus = false;
+    bool KeyDownMMinus = false;
+    bool KeyDownMQues = false;
     bool CreateBtnFlag = false;
     bool ContinueZero = false;
     int WrongAns = 0;
@@ -63,7 +70,7 @@ public class Stage : MonoBehaviour
     bool KeyDownFg = false;
     bool KeyLeftFg = false;
     bool KeyRightFg = false;
-    bool KeySpaceFg = false;
+    bool KeyTabFg = false;
     bool KeyActiveOnce = false;
     public int FramePos = 1; //Frame的位置，0:棋盤格位置 1:右上設置 2:右下設置
     public int FramePos2 = 2; //Frame的右上位置，0:X格數 1:Y格數 2:創建關卡 3:正電地雷 4:負電地雷
@@ -307,13 +314,13 @@ public class Stage : MonoBehaviour
 
     }
 
-    public void BtnPredict(int X, int Y)
+    public void BtnPredict(int X, int Y, int Mode)
     {
         SelectX = X;
         SelectY = Y;
 
         bool renew = false;
-        if (sgmap[SelectX,SelectY] == 0 && !renew)
+        if (((sgmap[SelectX,SelectY] == 0 && Mode == 0) || (sgmap[SelectX,SelectY] <= 0 && sgmap[SelectX,SelectY] >= -3 && sgmap[SelectX,SelectY] != -1 && Mode == 1)) && !renew)
         {
             sgmap[SelectX,SelectY] = -1;
             // uiText.text = "我<color=green>猜</color> <color=yellow>(" + SelectX + "," + SelectY + ")</color> 是<color=red>正電地雷</color>\n" + uiText.text;
@@ -321,10 +328,8 @@ public class Stage : MonoBehaviour
             BtnTxtGot.GetComponent<Text>().text = "＋";
             BtnTxtGot.GetComponent<Text>().color = Color.red;
             renew = true;
-            GuessMPlus++;
-            uiTextMine.text = "<color=red>正電地雷</color>: 設置"+StageNumMPlus+" 預測"+GuessMPlus+"\n<color=cyan>負電地雷</color>: 設置"+StageNumMMinus+" 預測"+GuessMMinus;
         }
-        if (sgmap[SelectX,SelectY] == -1 && !renew)
+        if (((sgmap[SelectX,SelectY] == -1 && Mode == 0) || (sgmap[SelectX,SelectY] <= 0 && sgmap[SelectX,SelectY] >= -3 && sgmap[SelectX,SelectY] != -2 && Mode == 2)) && !renew)
         {
             sgmap[SelectX,SelectY] = -2;
             // uiText.text = "我<color=green>猜</color> <color=yellow>(" + SelectX + "," + SelectY + ")</color> 是<color=cyan>負電地雷</color>\n" + uiText.text;
@@ -332,11 +337,8 @@ public class Stage : MonoBehaviour
             BtnTxtGot.GetComponent<Text>().text = "－";
             BtnTxtGot.GetComponent<Text>().color = new Color(0f, 6f/8f, 6f/8f, 1f);
             renew = true;
-            GuessMPlus--;
-            GuessMMinus++;
-            uiTextMine.text = "<color=red>正電地雷</color>: 設置"+StageNumMPlus+" 預測"+GuessMPlus+"\n<color=cyan>負電地雷</color>: 設置"+StageNumMMinus+" 預測"+GuessMMinus;
         }
-        if (sgmap[SelectX,SelectY] == -2 && !renew)
+        if (((sgmap[SelectX,SelectY] == -2 && Mode == 0) || (sgmap[SelectX,SelectY] <= 0 && sgmap[SelectX,SelectY] >= -2 && Mode == 3)) && !renew)
         {
             sgmap[SelectX,SelectY] = -3;
             // uiText.text = "我<color=blue>不知道</color> <color=yellow>(" + SelectX + "," + SelectY + ")</color> 是什麼..\n" + uiText.text;
@@ -344,10 +346,8 @@ public class Stage : MonoBehaviour
             BtnTxtGot.GetComponent<Text>().text = "？";
             BtnTxtGot.GetComponent<Text>().color = Color.black;
             renew = true;
-            GuessMMinus--;
-            uiTextMine.text = "<color=red>正電地雷</color>: 設置"+StageNumMPlus+" 預測"+GuessMPlus+"\n<color=cyan>負電地雷</color>: 設置"+StageNumMMinus+" 預測"+GuessMMinus;
         }
-        if (sgmap[SelectX,SelectY] == -3 && !renew)
+        if (((sgmap[SelectX,SelectY] == -3 && (Mode == 0 || Mode == 3)) || (sgmap[SelectX,SelectY] == -1 && Mode == 1) || (sgmap[SelectX,SelectY] == -2 && Mode == 2)) && !renew)
         {
             sgmap[SelectX,SelectY] = 0;
             GameObject BtnTxtGot = GameObject.Find("Btn" + (SelectX+1) + "-" + (SelectY+1) + "/Text");
@@ -356,6 +356,23 @@ public class Stage : MonoBehaviour
             renew = true;
         }
 
+        GuessMineNum();
+    }
+
+    //計算猜測的地雷數量
+    public void GuessMineNum()
+    {
+        GuessMPlus = 0;
+        GuessMMinus = 0;
+        for (int i = 0; i < StageNumX; i++)
+        {
+            for (int j = 0; j < StageNumY; j++)
+            {
+                if(sgmap[i, j] == -1) {GuessMPlus++;}
+                if(sgmap[i, j] == -2) {GuessMMinus++;}
+            }
+        }
+        uiTextMine.text = "<color=red>正電地雷</color>: 設置"+StageNumMPlus+" 預測"+GuessMPlus+"\n<color=cyan>負電地雷</color>: 設置"+StageNumMMinus+" 預測"+GuessMMinus;
     }
 
     public void BtnEightCheck(int X, int Y)
@@ -541,22 +558,22 @@ public class Stage : MonoBehaviour
     {
 
         //抓取鍵盤按Space的動作
-        if (Input.GetKeyDown("tab")) {KeySpaceFg = true;}
+        if (Input.GetKeyDown("tab")) {KeyTabFg = true;}
         if (Input.GetKeyUp("tab"))
         {
-            KeyActiveOnce = true;
-            if (FramePos == 0 && KeySpaceFg) {FramePos = 1; KeySpaceFg = false; FrameAni.Play("FrameL");}
-            if (FramePos == 1 && KeySpaceFg) {FramePos = 2; KeySpaceFg = false; FrameAni.Play("FrameL");}
-            if (FramePos == 2 && KeySpaceFg) {FramePos = 0; KeySpaceFg = false; FrameAni.Play("FrameS");}
+            if (FramePos == 0 && KeyTabFg) {FramePos = 1; KeyTabFg = false;}
+            if (FramePos == 1 && KeyTabFg) {FramePos = 2; KeyTabFg = false;}
+            if (FramePos == 2 && KeyTabFg) {FramePos = 0; KeyTabFg = false;}
             //跑迴圈確認Frame要跑到哪裡
             bool CheckEnable = true;
             while(CheckEnable)
             {
                 CheckEnable = false;
-                if (FramePos == 0 && (FramePosX == -1 || FramePosY == -1)) {FramePos = 1; CheckEnable = true; FrameAni.Play("FrameL");}
-                if (FramePos == 1 && !ControllerEnable) {FramePos = 2; CheckEnable = true; FrameAni.Play("FrameL");}
-                if (FramePos == 2 && !BtnCheckAns.GetComponent<Button>().interactable) {FramePos = 0; CheckEnable = true; FrameAni.Play("FrameS");}
+                if (FramePos == 0 && (FramePosX == -1 || FramePosY == -1)) {FramePos = 1; CheckEnable = true;}
+                if (FramePos == 1 && !ControllerEnable) {FramePos = 2; CheckEnable = true;}
+                if (FramePos == 2 && !BtnCheckAns.GetComponent<Button>().interactable) {FramePos = 0; CheckEnable = true;}
             }
+            KeyActiveOnce = true;
         }
         //抓取鍵盤上下左右的動作
         if (Input.GetKey("up") || Input.GetKey("w")) {KeyUpTm += Time.deltaTime;}
@@ -701,15 +718,39 @@ public class Stage : MonoBehaviour
         //偵測滑鼠左右鍵/鍵盤Space&Ctrl是否被按下
         if (Input.GetMouseButtonDown(0)) {MouseDownLeft = true;}
         if (Input.GetMouseButtonDown(1)) {MouseDownRight = true;}
-        if (Input.GetButtonDown("Jump")) {KeyDownLeft = true;}
-        if (Input.GetButtonDown("Fire1")) {KeyDownRight = true;}
+        if (Input.GetButtonDown("Jump")||Input.GetKeyDown("h")) {KeyDownLeft = true;}
+        if (Input.GetButtonDown("Fire1")||Input.GetKeyDown("j")) {KeyDownRight = true;}
+        if (Input.GetKeyDown("n")) {KeyDownMPlus = true;}
+        if (Input.GetKeyDown("m")) {KeyDownMMinus = true;}
+        if (Input.GetKeyDown(",")) {KeyDownMQues = true;}
+
+        //滑鼠左鍵按下彈起在創建關卡按鈕上，則創建關卡
+        if (Input.GetMouseButtonUp(0) && MouseDownLeft && HoverCrtStage && MouseDownOnBtnCrtStage)
+        {
+            CrtBtn();
+        }
+        if ((Input.GetButtonUp("Jump")||Input.GetKeyUp("h")) && FramePos == 1 && FramePos2 == 2)
+        {
+            CrtBtn();
+        }
+
+        //滑鼠左鍵按下彈起在檢查答案按鈕上，則檢查答案
+        if (Input.GetMouseButtonUp(0) && MouseDownLeft && HoverCheckAns && MouseDownOnBtnCheckAns)
+        {
+            CheckBtnAnswer();
+        }
+        if ((Input.GetButtonUp("Jump")||Input.GetKeyUp("h")) && FramePos == 2)
+        {
+            CheckBtnAnswer();
+        }
+
 
         //若單純只有滑鼠左鍵按下彈起，則點開該Btn內容物
         if (Input.GetMouseButtonUp(0) && MouseDownLeft && !MouseDownRight && MouseDownOnBtn && HoverX != -1 && HoverY != -1)
         {
             BtnPress(HoverX, HoverY);
         }
-        if (Input.GetButtonUp("Jump") && KeyDownLeft && !KeyDownRight && FramePos == 0)
+        if ((Input.GetButtonUp("Jump")||Input.GetKeyUp("h")) && KeyDownLeft && !KeyDownRight && FramePos == 0)
         {
             BtnPress(FramePosX, FramePosY);
         }
@@ -717,11 +758,23 @@ public class Stage : MonoBehaviour
         //若單純只有滑鼠右鍵按下彈起，則開關預測可能為地雷的功能
         if (Input.GetMouseButtonUp(1) && !MouseDownLeft && MouseDownRight && MouseDownOnBtn && HoverX != -1 && HoverY != -1)
         {
-            BtnPredict(HoverX, HoverY);
+            BtnPredict(HoverX, HoverY, 0);
         }
-        if (Input.GetButtonUp("Fire1") && !KeyDownLeft && KeyDownRight && FramePos == 0)
+        if ((Input.GetButtonUp("Fire1")||Input.GetKeyUp("j")) && !KeyDownLeft && KeyDownRight && FramePos == 0)
         {
-            BtnPredict(FramePosX, FramePosY);
+            BtnPredict(FramePosX, FramePosY, 0);
+        }
+        if (Input.GetKeyUp("n") && KeyDownMPlus && FramePos == 0)
+        {
+            BtnPredict(FramePosX, FramePosY, 1);
+        }
+        if (Input.GetKeyUp("m") && KeyDownMMinus && FramePos == 0)
+        {
+            BtnPredict(FramePosX, FramePosY, 2);
+        }
+        if (Input.GetKeyUp(",") && KeyDownMQues && FramePos == 0)
+        {
+            BtnPredict(FramePosX, FramePosY, 3);
         }
 
         //若滑鼠左鍵與滑鼠右鍵同時按下並且其中一鍵彈起，則確認附近8格Btn預測地雷數與點下Btn數值是否相同，進而開拓其他位置的Btn
@@ -729,11 +782,11 @@ public class Stage : MonoBehaviour
         {
             BtnEightCheck(HoverX, HoverY);
         }
-        if ((Input.GetButtonUp("Jump")||Input.GetButtonUp("Fire1")) && stagephase == 1 && KeyDownLeft && KeyDownRight && FramePos == 0)
+        if ((Input.GetButtonUp("Jump")||Input.GetKeyUp("h")||Input.GetButtonUp("Fire1")||Input.GetKeyUp("j")) && stagephase == 1 && KeyDownLeft && KeyDownRight && FramePos == 0)
         {
             BtnEightCheck(FramePosX, FramePosY);
         }
-        if ((Input.GetButtonUp("Jump")||Input.GetButtonUp("Fire1")) && stagephase == 0 && KeyDownLeft && KeyDownRight && FramePos == 0)
+        if ((Input.GetButtonUp("Jump")||Input.GetKeyUp("h")||Input.GetButtonUp("Fire1")||Input.GetKeyUp("j")) && stagephase == 0 && KeyDownLeft && KeyDownRight && FramePos == 0)
         {
             KeyDownLeft = false; KeyDownRight = false;
         }
@@ -789,10 +842,13 @@ public class Stage : MonoBehaviour
         }
 
         //偵測滑鼠左右鍵是否被彈起
-        if (Input.GetMouseButtonUp(0)) {MouseDownLeft = false; MouseDownOnBtn = false;}
-        if (Input.GetMouseButtonUp(1)) {MouseDownRight = false; MouseDownOnBtn = false;}
-        if (Input.GetButtonUp("Jump")) {KeyDownLeft = false;}
-        if (Input.GetButtonUp("Fire1")) {KeyDownRight = false;}
+        if (Input.GetMouseButtonUp(0)) {MouseDownLeft = false; MouseDownOnBtn = false; MouseDownOnBtnCrtStage = false; MouseDownOnBtnCheckAns = false;}
+        if (Input.GetMouseButtonUp(1)) {MouseDownRight = false; MouseDownOnBtn = false; MouseDownOnBtnCrtStage = false; MouseDownOnBtnCheckAns = false;}
+        if (Input.GetButtonUp("Jump")||Input.GetKeyUp("h")) {KeyDownLeft = false;}
+        if (Input.GetButtonUp("Fire1")||Input.GetKeyUp("j")) {KeyDownRight = false;}
+        if (Input.GetKeyUp("n")) {KeyDownMPlus = false;}
+        if (Input.GetKeyUp("m")) {KeyDownMMinus = false;}
+        if (Input.GetKeyUp(",")) {KeyDownMQues = false;}
         //儲存變更的螢幕大小
         ScnX = Screen.width;
         ScnY = Screen.height;
