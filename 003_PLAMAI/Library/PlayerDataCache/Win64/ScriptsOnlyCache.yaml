@@ -1,10 +1,13 @@
 ScriptsOnlyBuild:
   usedScripts:
     Assembly-CSharp.dll:
+    - BtnCheckAnsHover
+    - BtnCrtStageHover
     - BtnHover
     - NetClient
     - NetConnect
     - NetHost
+    - SceneControl
     - Stage
     - WindowControl
     Unity.2D.Animation.Editor.dll:
@@ -90,9 +93,19 @@ ScriptsOnlyBuild:
     - Class: 114
       Script: {instanceID: 3458}
     - Class: 114
-      Script: {instanceID: 3974}
+      Script: {instanceID: 3616}
     - Class: 114
-      Script: {instanceID: 4360}
+      Script: {instanceID: 3694}
+    - Class: 114
+      Script: {instanceID: 3696}
+    - Class: 114
+      Script: {instanceID: 3978}
+    - Class: 114
+      Script: {instanceID: 4366}
+    - Class: 114
+      Script: {instanceID: 4618}
+    - Class: 114
+      Script: {instanceID: 5830}
     - Class: 115
       Script: {instanceID: 0}
     - Class: 128
@@ -149,9 +162,11 @@ ScriptsOnlyBuild:
     - Class: 114
       Script: {instanceID: 3616}
     - Class: 114
-      Script: {instanceID: 4612}
+      Script: {instanceID: 3694}
     - Class: 114
-      Script: {instanceID: 23298}
+      Script: {instanceID: 4348}
+    - Class: 114
+      Script: {instanceID: 4618}
     - Class: 115
       Script: {instanceID: 0}
     - Class: 128
@@ -447,6 +462,18 @@ ScriptsOnlyBuild:
     className: ContentSizeFitter
   - hash:
       serializedVersion: 2
+      Hash: 2963088320fe5fab848e1220974b2a91
+    assemblyName: Assembly-CSharp.dll
+    namespaceName: 
+    className: SceneControl
+  - hash:
+      serializedVersion: 2
+      Hash: 71bb6a6b6c8f052f948db64c7dd3ca4f
+    assemblyName: Assembly-CSharp.dll
+    namespaceName: 
+    className: BtnCheckAnsHover
+  - hash:
+      serializedVersion: 2
       Hash: caa533b001ae39b864ba8425019e2268
     assemblyName: UnityEngine.UI.dll
     namespaceName: UnityEngine.UI
@@ -477,7 +504,7 @@ ScriptsOnlyBuild:
     className: BaseInput
   - hash:
       serializedVersion: 2
-      Hash: 647ce610f06dbeb8e80b78e804fee7e7
+      Hash: d01053a311020bd54a461883ab79e9c0
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: Stage
@@ -549,6 +576,12 @@ ScriptsOnlyBuild:
     className: ActivationTrack
   - hash:
       serializedVersion: 2
+      Hash: 74a013f274a6916900ff3c5f0feaaa4c
+    assemblyName: Assembly-CSharp.dll
+    namespaceName: 
+    className: NetConnect
+  - hash:
+      serializedVersion: 2
       Hash: 71bb6a6b6c8f052f948db64c7dd3ca4f
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
@@ -579,7 +612,7 @@ ScriptsOnlyBuild:
     className: SpriteShapeGeometryCache
   - hash:
       serializedVersion: 2
-      Hash: 84698670f8289ee1f9bdc2a6f77a08b0
+      Hash: 9ab2019f6ccb38b3aa4667b1e92f2a49
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: NetHost
@@ -711,10 +744,10 @@ ScriptsOnlyBuild:
     className: FabrikSolver2D
   - hash:
       serializedVersion: 2
-      Hash: 0f4166acf7de946757d49f929c79729a
+      Hash: 71bb6a6b6c8f052f948db64c7dd3ca4f
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
-    className: NetConnect
+    className: BtnCrtStageHover
   platform: 19
   scenePathNames:
   - Assets/Scenes/NetworkConnect.unity

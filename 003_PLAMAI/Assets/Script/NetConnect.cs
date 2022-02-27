@@ -1,3 +1,6 @@
+using System.Net;
+using System.Net.NetworkInformation;
+using System.Net.Sockets;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -6,6 +9,10 @@ using UnityEngine.UI;
 public class NetConnect : MonoBehaviour
 {
     public GameObject Camera;
+    public GameObject BtnGameStart;
+    public GameObject BtnGameNetCoop;
+    public GameObject BtnGameNetTime;
+    public GameObject BtnGameNetChess;
     public GameObject BtnHost;
     public GameObject BtnClient;
     public InputField IFIP1;
@@ -23,13 +30,25 @@ public class NetConnect : MonoBehaviour
 
     public void BtnHostClick()
     {
+        SceneControl.GameNet = 1;
         Camera.GetComponent<NetHost>().enabled = true;
+        BtnGameStart.GetComponent<Button>().interactable = false;
         BtnHost.GetComponent<Button>().interactable = false;
         BtnClient.GetComponent<Button>().interactable = false;
         IFIP1.interactable = false;
         IFIP2.interactable = false;
         IFIP3.interactable = false;
         IFIP4.interactable = false;
+        IFMsg.interactable = true;
+        BtnMsg.interactable = true;
+        var host = Dns.GetHostEntry(Dns.GetHostName());
+        foreach (var ip in host.AddressList)
+        {
+            if (ip.AddressFamily == AddressFamily.InterNetwork)
+            {
+                TextRecieve.text = "此設備可能IP位址: " + ip.ToString() + "\n" + TextRecieve.text;
+            }
+        }
     }
 
     public void BtnClientClick()
@@ -99,7 +118,9 @@ public class NetConnect : MonoBehaviour
 
         if (!IPCheckFail)
         {
+            SceneControl.GameNet = 2;
             Camera.GetComponent<NetClient>().enabled = true;
+            BtnGameStart.GetComponent<Button>().interactable = false;
             NetClient.ipAdd = IFIP1.text+"."+IFIP2.text+"."+IFIP3.text+"."+IFIP4.text;
             BtnHost.GetComponent<Button>().interactable = false;
             BtnClient.GetComponent<Button>().interactable = false;
@@ -121,6 +142,12 @@ public class NetConnect : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-
+        if (SceneControl.GameNetFg)
+        {
+            BtnGameNetCoop.GetComponent<Button>().interactable = true;
+            BtnGameNetTime.GetComponent<Button>().interactable = true;
+            BtnGameNetChess.GetComponent<Button>().interactable = true;
+            SceneControl.GameNetFg = false;
+        }
     }
 }
