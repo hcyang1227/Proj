@@ -24,61 +24,68 @@ public class Stage : MonoBehaviour
     public Text uiTextMine;
     public GameObject Frame;
     public Animator FrameAni;
+    public GameObject Frame2;
+    public Animator Frame2Ani;
     public int[,] sgmine = new int[30,25]; //stage mine，1:正電地雷 -1:負電地雷
     public int[,] sgmine2 = new int[30,25]; //stage mine 2，記憶附近是否有地雷，0:沒有 1:有
     public int[,] sgnum = new int[30,25]; //stage number，9:正電地雷 -9:負電地雷 0:附近沒地雷 其他:附近有幾個地雷(正負相消)
     public int[,] sgmap = new int[30,25]; //stage map，0:未開 1:剛踩探測是否為0 2:確認為0、其他數字或地雷
     public int[,] sgopnbtn = new int[30,25]; //stage open button，記憶可以開啟的複數位置，0:沒有 1:有
-    public int StageNumX;
-    public int StageNumY;
-    public int StageNumMPlus;
-    public int StageNumMMinus;
-    public int GuessMPlus = 0;
-    public int GuessMMinus = 0;
-    public int stagephase = 0;
-    public int SelectX;
-    public int SelectY;
-    public int ScnX;
-    public int ScnY;
-    public static int HoverX;
-    public static int HoverY;
-    public static bool HoverCrtStage;
-    public static bool HoverCheckAns;
-    public static bool MouseDownOnBtn = false;
-    public static bool MouseDownOnBtnCrtStage = false;
-    public static bool MouseDownOnBtnCheckAns = false;
-    bool MouseDownLeft = false;
-    bool MouseDownRight = false;
-    bool KeyDownLeft = false;
-    bool KeyDownRight = false;
-    bool KeyDownMPlus = false;
-    bool KeyDownMMinus = false;
-    bool KeyDownMQues = false;
-    bool CreateBtnFlag = false;
-    bool ContinueZero = false;
-    int WrongAns = 0;
-    bool ControllerEnable = true;
-    float KeyUpTm = 0f;
-    float KeyDownTm = 0f;
-    float KeyLeftTm = 0f;
-    float KeyRightTm = 0f;
-    float KeyUpTm2 = 0.15f;
-    float KeyDownTm2 = 0.15f;
-    float KeyLeftTm2 = 0.15f;
-    float KeyRightTm2 = 0.15f;
-    bool KeyUpFg = false;
-    bool KeyDownFg = false;
-    bool KeyLeftFg = false;
-    bool KeyRightFg = false;
-    bool KeyTabFg = false;
+    public int StageNumX; //關卡創建棋盤格X格數
+    public int StageNumY; //關卡創建棋盤格Y格數
+    public int StageNumMPlus; //關卡創建棋盤格正電地雷數
+    public int StageNumMMinus; //關卡創建棋盤格負電地雷數
+    public int GuessMPlus = 0; //預測正電地雷數量
+    public int GuessMMinus = 0; //預測負電地雷數量
+    public int stagephase = 0; //關卡階段，0:創建棋盤盤面 1:正常遊戲中 2:解除地雷成功或踩到地雷
+    public int SelectX; //目前選擇棋盤格位置X
+    public int SelectY; //目前選擇棋盤格位置Y
+    public int ScnX; //視窗X長度記憶
+    public int ScnY; //視窗Y長度記憶
+    public static int HoverX; //掠過棋盤格位置X
+    public static int HoverY; //掠過棋盤格位置Y
+    public static bool HoverCrtStage; //掠過創建關卡按鈕
+    public static bool HoverCheckAns; //掠過檢查答案按鈕
+    public static bool MouseDownOnBtn = false; //按下棋盤格Btn按鈕
+    public static bool MouseDownOnBtnCrtStage = false; //按下創建關卡按鈕
+    public static bool MouseDownOnBtnCheckAns = false; //按下檢查答案按鈕
+    bool MouseDownLeft = false; //滑鼠左鍵按壓flag
+    bool MouseDownRight = false; //滑鼠右鍵按壓flag
+    bool KeyDownLeft = false; //鍵盤擬滑鼠左鍵按壓flag
+    bool KeyDownRight = false; //鍵盤擬滑鼠右鍵按壓flag
+    bool KeyDownMPlus = false; //鍵盤n鍵按壓flag
+    bool KeyDownMMinus = false; //鍵盤m鍵按壓flag
+    bool KeyDownMQues = false; //鍵盤,鍵按壓flag
+    bool CreateBtnFlag = false; //是否已創建棋盤格Btn，true:當創建Btn時 false:當螢幕大小改變時
+    bool ContinueZero = false; //拓展周圍地雷總和值為0的棋盤
+    int WrongAns = 0; //錯誤答案處數計數器
+    bool ControllerEnable = true; //右上方可否看到輸入欄等UI控制元件
+    float KeyUpTm = 0f; //鍵盤上鍵按壓時間
+    float KeyDownTm = 0f; //鍵盤下鍵按壓時間
+    float KeyLeftTm = 0f; //鍵盤左鍵按壓時間
+    float KeyRightTm = 0f; //鍵盤右鍵按壓時間
+    float KeyUpTm2 = 0.15f; //鍵盤上鍵按壓時間2
+    float KeyDownTm2 = 0.15f; //鍵盤下鍵按壓時間2
+    float KeyLeftTm2 = 0.15f; //鍵盤左鍵按壓時間2
+    float KeyRightTm2 = 0.15f; //鍵盤右鍵按壓時間2
+    bool KeyUpFg = false; //鍵盤上鍵按壓flag
+    bool KeyDownFg = false; //鍵盤下鍵按壓flag
+    bool KeyLeftFg = false; //鍵盤左鍵按壓flag
+    bool KeyRightFg = false; //鍵盤右鍵按壓flag
+    bool KeyTabFg = false; //鍵盤Tab鍵按壓flag
     public int FramePos = 1; //Frame的位置，0:棋盤格位置 1:右上設置 2:右下設置
     public int FramePos2 = 2; //Frame的右上位置，0:X格數 1:Y格數 2:創建關卡 3:正電地雷 4:負電地雷
-    public int FramePosX = -1;
-    public int FramePosY = -1;
-    public int NetHostCount = 0;
-    public int NetHostGetCount = 0;
-    public int NetClientCount = 0;
-    public int NetClientGetCount = 0;
+    public int FramePosX = -1; //Frame在棋盤格中的X位置
+    public int FramePosY = -1; //Frame在棋盤格中的Y位置
+    public int Frame2Pos = 1; //Frame2的位置，0:棋盤格位置 1:右上設置 2:右下設置
+    public int Frame2Pos2 = 2; //Frame2的右上位置，0:X格數 1:Y格數 2:創建關卡 3:正電地雷 4:負電地雷
+    public int Frame2PosX = -1; //Frame2在棋盤格中的X位置
+    public int Frame2PosY = -1; //Frame2在棋盤格中的Y位置
+    public int NetHostCount = 0; //服務端計數量
+    public int NetHostGetCount = 0; //服務端計數量(從對方網路取得)
+    public int NetClientCount = 0; //客戶端計數量
+    public int NetClientGetCount = 0; //客戶端計數量(從對方網路取得)
+    bool NetAvlb = true; //一次傳輸一個網路指令，同時多個輸入是不許可的
 
     void Start()
     {
@@ -87,6 +94,7 @@ public class Stage : MonoBehaviour
         if (SceneControl.GameMode == 0)
         {
             uiText.text = "您正在遊玩<color=magenta>單人模式</color>\n" + uiText.text;
+            Frame2.SetActive(false);
         }
         else if (SceneControl.GameMode == 1)
         {
@@ -114,6 +122,7 @@ public class Stage : MonoBehaviour
         uiTextMine.text = "<color=red>正電地雷</color>: 設置"+"？"+" 預測"+"？"+"\n<color=cyan>負電地雷</color>: 設置"+"？"+" 預測"+"？";
         Frame.transform.position = BtnCrtStage.transform.position;
         FrameAni.Play("FrameL");
+        Frame2Ani.Play("Frame2L");
         EventSystem.current.SetSelectedGameObject(BtnCrtStage, null);
 
     }
@@ -213,15 +222,14 @@ public class Stage : MonoBehaviour
         FramePos2 = 2;
         Frame.transform.position = BtnCrtStage.transform.position;
         FrameAni.Play("FrameL");
+        Frame2PosX = 0;
+        Frame2PosY = 0;
+        Frame2Pos = 1;
+        Frame2Pos2 = 2;
+        Frame2.transform.position = BtnCrtStage.transform.position;
+        Frame2Ani.Play("Frame2L");
         EventSystem.current.SetSelectedGameObject(BtnCrtStage, null);
         uiTextMine.text = "<color=red>正電地雷</color>: 設置"+"？"+" 預測"+"？"+"\n<color=cyan>負電地雷</color>: 設置"+"？"+" 預測"+"？";
-
-        //如果是多人模式且為服務端，則傳送訊息給對方
-        if (SceneControl.GameNet == 1)
-        {
-            NetHostCount = 1;
-            NetHost.SocketSend("CrtBtn," + NetHostCount + "," + StageNumX + "," + StageNumY);
-        }
     }
 
 
@@ -335,20 +343,6 @@ public class Stage : MonoBehaviour
             stagephase = 1;
             SetController(false);
             GuessMineNum();
-
-            if (SceneControl.GameNet == 1)
-            {
-                NetHostCount = 2;
-                string strtmp = "BtnPressInit," + NetHostCount + "," + StageNumMPlus + "," + StageNumMMinus + "," + SelectX + "," + SelectY;
-                for (int i = 1; i <= 30; i++)
-                {
-                    for (int j = 1; j <= 25; j++)
-                    {
-                        strtmp = strtmp + "," + sgmine[i-1,j-1];
-                    }
-                }
-                NetHost.SocketSend(strtmp);
-            }
         }
 
         if (BtnPressFirst)
@@ -362,16 +356,6 @@ public class Stage : MonoBehaviour
             //關卡階段1的情況下點擊尚未開啟的Btn，則翻開該Btn
             if (stagephase == 1 && sgmap[SelectX,SelectY] == 0 && Math.Abs(sgnum[SelectX,SelectY]) != 9)
             {
-                if (SceneControl.GameNet == 1)
-                {
-                    NetHostCount++;
-                    NetHost.SocketSend("BtnPress," + NetHostCount + "," + SelectX + "," + SelectY);
-                }
-                if (SceneControl.GameNet == 2)
-                {
-                    NetClientCount++;
-                    NetClient.SocketSend("BtnPress," + NetClientCount + "," + SelectX + "," + SelectY);
-                }
                 // uiText.text = "<color=green>踩開</color>了 <color=yellow>(" + SelectX + "," + SelectY + ")</color>\n" + uiText.text;
                 sgmap[SelectX,SelectY] = 1;
                 CheckBtnStatus(SelectX, SelectY);
@@ -380,16 +364,6 @@ public class Stage : MonoBehaviour
 
             if (stagephase == 1 && sgmap[SelectX,SelectY] == 0 && Math.Abs(sgnum[SelectX,SelectY]) == 9)
             {
-                if (SceneControl.GameNet == 1)
-                {
-                    NetHostCount++;
-                    NetHost.SocketSend("BtnPress," + NetHostCount + "," + SelectX + "," + SelectY);
-                }
-                if (SceneControl.GameNet == 2)
-                {
-                    NetClientCount++;
-                    NetClient.SocketSend("BtnPress," + NetClientCount + "," + SelectX + "," + SelectY);
-                }
                 uiText.text = "<color=magenta>糟了，是地雷！</color>\n" + uiText.text;
                 //Btn陣列顯示所有地雷
                 RevealMine();
@@ -398,6 +372,9 @@ public class Stage : MonoBehaviour
                 FramePos = 1;
                 FramePos2 = 2;
                 FrameAni.Play("FrameL");
+                Frame2Pos = 1;
+                Frame2Pos2 = 2;
+                Frame2Ani.Play("Frame2L");
                 KeyActive();
             }
         }
@@ -523,6 +500,9 @@ public class Stage : MonoBehaviour
             FramePos = 1;
             FramePos2 = 2;
             FrameAni.Play("FrameL");
+            Frame2Pos = 1;
+            Frame2Pos2 = 2;
+            Frame2Ani.Play("Frame2L");
             KeyActive();
         }
     }
@@ -638,6 +618,9 @@ public class Stage : MonoBehaviour
                     FramePos = 1;
                     FramePos2 = 2;
                     FrameAni.Play("FrameL");
+                    Frame2Pos = 1;
+                    Frame2Pos2 = 2;
+                    Frame2Ani.Play("Frame2L");
                     KeyActive();
                 }
             }
@@ -740,6 +723,43 @@ public class Stage : MonoBehaviour
             EventSystem.current.SetSelectedGameObject(BtnCheckAns, null);
             DetectInput();
         }
+
+        if (Frame2Pos == 0 && Frame2PosX != -1 && Frame2PosX != -1)
+        {
+            GameObject BtnFocus = GameObject.Find("Btn" + (Frame2PosX+1) + "-" + (Frame2PosY+1));
+            Frame2.transform.position = BtnFocus.transform.position;
+            Frame2Ani.Play("Frame2S");
+        }
+        if (Frame2Pos2 == 0 && Frame2Pos == 1)
+        {
+            Frame2.transform.position = InputFieldX.transform.position;
+            Frame2Ani.Play("Frame2M");
+        }
+        if (Frame2Pos2 == 1 && Frame2Pos == 1)
+        {
+            Frame2.transform.position = InputFieldY.transform.position;
+            Frame2Ani.Play("Frame2M");
+        }
+        if (Frame2Pos2 == 2 && Frame2Pos == 1)
+        {
+            Frame2.transform.position = BtnCrtStage.transform.position;
+            Frame2Ani.Play("Frame2L");
+        }
+        if (Frame2Pos2 == 3 && Frame2Pos == 1)
+        {
+            Frame2.transform.position = InputFieldMinePlus.transform.position;
+            Frame2Ani.Play("Frame2M");
+        }
+        if (Frame2Pos2 == 4 && Frame2Pos == 1)
+        {
+            Frame2.transform.position = InputFieldMineMinus.transform.position;
+            Frame2Ani.Play("Frame2M");
+        }
+        if (Frame2Pos == 2)
+        {
+            Frame2.transform.position = BtnCheckAns.transform.position;
+            Frame2Ani.Play("Frame2L");
+        }
     }
 
     //遊戲中每幀更新內容
@@ -757,6 +777,10 @@ public class Stage : MonoBehaviour
                     if (int.Parse(strAry[1]) == NetClientGetCount)
                     {
                         BtnPress(int.Parse(strAry[2]),int.Parse(strAry[3]));
+                        Frame2Pos = 0;
+                        Frame2PosX = int.Parse(strAry[2]);
+                        Frame2PosY = int.Parse(strAry[3]);
+                        KeyActive();
                     }
                     else {uiText.text = "<color=red>連線出錯>___<</color>\n" + uiText.text;}
                     break;
@@ -765,6 +789,10 @@ public class Stage : MonoBehaviour
                     if (int.Parse(strAry[1]) == NetClientGetCount)
                     {
                         BtnPredict(int.Parse(strAry[2]),int.Parse(strAry[3]),int.Parse(strAry[4]));
+                        Frame2Pos = 0;
+                        Frame2PosX = int.Parse(strAry[2]);
+                        Frame2PosY = int.Parse(strAry[3]);
+                        KeyActive();
                     }
                     else {uiText.text = "<color=red>連線出錯>___<</color>\n" + uiText.text;}
                     break;
@@ -773,6 +801,10 @@ public class Stage : MonoBehaviour
                     if (int.Parse(strAry[1]) == NetClientGetCount)
                     {
                         BtnEightCheck(int.Parse(strAry[2]),int.Parse(strAry[3]));
+                        Frame2Pos = 0;
+                        Frame2PosX = int.Parse(strAry[2]);
+                        Frame2PosY = int.Parse(strAry[3]);
+                        KeyActive();
                     }
                     else {uiText.text = "<color=red>連線出錯>___<</color>\n" + uiText.text;}
                     break;
@@ -781,6 +813,18 @@ public class Stage : MonoBehaviour
                     if (int.Parse(strAry[1]) == NetClientGetCount)
                     {
                         CheckBtnAnswer();
+                    }
+                    else {uiText.text = "<color=red>連線出錯>___<</color>\n" + uiText.text;}
+                    break;
+                case "FrameChgPos":
+                    NetClientGetCount++;
+                    if (int.Parse(strAry[1]) == NetClientGetCount)
+                    {
+                        Frame2Pos = int.Parse(strAry[2]);
+                        Frame2Pos2 = int.Parse(strAry[3]);
+                        Frame2PosX = int.Parse(strAry[4]);
+                        Frame2PosY = int.Parse(strAry[5]);
+                        KeyActive();
                     }
                     else {uiText.text = "<color=red>連線出錯>___<</color>\n" + uiText.text;}
                     break;
@@ -814,7 +858,7 @@ public class Stage : MonoBehaviour
             switch (strAry[0])
             {
                 case "CrtBtn":
-                    NetHostGetCount = 1;
+                    NetHostGetCount++;
                     if (int.Parse(strAry[1]) == NetHostGetCount)
                     {
                         DestroyBtn();
@@ -827,7 +871,7 @@ public class Stage : MonoBehaviour
                     else {uiText.text = "<color=red>連線出錯>___<</color>\n" + uiText.text;}
                     break;
                 case "BtnPressInit":
-                    NetHostGetCount = 2;
+                    NetHostGetCount++;
                     if (int.Parse(strAry[1]) == NetHostGetCount)
                     {
                         CrtBtn();
@@ -843,6 +887,10 @@ public class Stage : MonoBehaviour
                             }
                         }
                         BtnPress(int.Parse(strAry[4]),int.Parse(strAry[5]));
+                        Frame2Pos = 0;
+                        Frame2PosX = int.Parse(strAry[4]);
+                        Frame2PosY = int.Parse(strAry[5]);
+                        KeyActive();
                         uiText.text = "<color=magenta>服務端已決定地雷數量並開始遊戲...</color>\n" + uiText.text;
                     }
                     else {uiText.text = "<color=red>連線出錯>___<</color>\n" + uiText.text;}
@@ -852,6 +900,10 @@ public class Stage : MonoBehaviour
                     if (int.Parse(strAry[1]) == NetHostGetCount)
                     {
                         BtnPress(int.Parse(strAry[2]),int.Parse(strAry[3]));
+                        Frame2Pos = 0;
+                        Frame2PosX = int.Parse(strAry[2]);
+                        Frame2PosY = int.Parse(strAry[3]);
+                        KeyActive();
                     }
                     else {uiText.text = "<color=red>連線出錯>___<</color>\n" + uiText.text;}
                     break;
@@ -860,6 +912,10 @@ public class Stage : MonoBehaviour
                     if (int.Parse(strAry[1]) == NetHostGetCount)
                     {
                         BtnPredict(int.Parse(strAry[2]),int.Parse(strAry[3]),int.Parse(strAry[4]));
+                        Frame2Pos = 0;
+                        Frame2PosX = int.Parse(strAry[2]);
+                        Frame2PosY = int.Parse(strAry[3]);
+                        KeyActive();
                     }
                     else {uiText.text = "<color=red>連線出錯>___<</color>\n" + uiText.text;}
                     break;
@@ -868,6 +924,10 @@ public class Stage : MonoBehaviour
                     if (int.Parse(strAry[1]) == NetHostGetCount)
                     {
                         BtnEightCheck(int.Parse(strAry[2]),int.Parse(strAry[3]));
+                        Frame2Pos = 0;
+                        Frame2PosX = int.Parse(strAry[2]);
+                        Frame2PosY = int.Parse(strAry[3]);
+                        KeyActive();
                     }
                     else {uiText.text = "<color=red>連線出錯>___<</color>\n" + uiText.text;}
                     break;
@@ -876,6 +936,18 @@ public class Stage : MonoBehaviour
                     if (int.Parse(strAry[1]) == NetHostGetCount)
                     {
                         CheckBtnAnswer();
+                    }
+                    else {uiText.text = "<color=red>連線出錯>___<</color>\n" + uiText.text;}
+                    break;
+                case "FrameChgPos":
+                    NetHostGetCount++;
+                    if (int.Parse(strAry[1]) == NetHostGetCount)
+                    {
+                        Frame2Pos = int.Parse(strAry[2]);
+                        Frame2Pos2 = int.Parse(strAry[3]);
+                        Frame2PosX = int.Parse(strAry[4]);
+                        Frame2PosY = int.Parse(strAry[5]);
+                        KeyActive();
                     }
                     else {uiText.text = "<color=red>連線出錯>___<</color>\n" + uiText.text;}
                     break;
@@ -902,10 +974,13 @@ public class Stage : MonoBehaviour
             NetClient.recvStr = "";
         }
 
+        NetAvlb = true;
+
         //抓取鍵盤按Space的動作
         if (Input.GetKeyDown("tab")) {KeyTabFg = true;}
-        if (Input.GetKeyUp("tab"))
+        if (Input.GetKeyUp("tab") && NetAvlb)
         {
+            NetAvlb = false;
             if (FramePos == 0 && KeyTabFg) {FramePos = 1; KeyTabFg = false;}
             if (FramePos == 1 && KeyTabFg) {FramePos = 2; KeyTabFg = false;}
             if (FramePos == 2 && KeyTabFg) {FramePos = 0; KeyTabFg = false;}
@@ -917,6 +992,17 @@ public class Stage : MonoBehaviour
                 if (FramePos == 0 && (FramePosX == -1 || FramePosY == -1)) {FramePos = 1; CheckEnable = true;}
                 if (FramePos == 1 && !ControllerEnable) {FramePos = 2; CheckEnable = true;}
                 if (FramePos == 2 && !BtnCheckAns.GetComponent<Button>().interactable) {FramePos = 0; CheckEnable = true;}
+            }
+
+            if (SceneControl.GameNet == 1 && stagephase != 0)
+            {
+                NetHostCount++;
+                NetHost.SocketSend("FrameChgPos," + NetHostCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY);
+            }
+            if (SceneControl.GameNet == 2 && stagephase != 0)
+            {
+                NetClientCount++;
+                NetClient.SocketSend("FrameChgPos," + NetClientCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY);
             }
             KeyActive();
         }
@@ -930,77 +1016,209 @@ public class Stage : MonoBehaviour
         if (Input.GetKeyUp("left") || Input.GetKeyUp("a")) {KeyLeftTm = 0f; KeyLeftTm2 = 0.15f; KeyLeftFg = false;}
         if (Input.GetKeyUp("right") || Input.GetKeyUp("d")) {KeyRightTm = 0f; KeyRightTm2 = 0.15f; KeyRightFg = false;}
         //如果上下左右被按下，則變更Frame的位置(在棋盤格時)
-        if (KeyUpTm > 0f && !KeyUpFg && FramePos == 0 && FramePosY > 0)
+        if (KeyUpTm > 0f && !KeyUpFg && FramePos == 0 && FramePosY > 0 && NetAvlb)
         {
+            NetAvlb = false;
             FramePosY--;
             KeyUpFg = true;
+            if (SceneControl.GameNet == 1 && stagephase != 0)
+            {
+                NetHostCount++;
+                NetHost.SocketSend("FrameChgPos," + NetHostCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY);
+            }
+            if (SceneControl.GameNet == 2 && stagephase != 0)
+            {
+                NetClientCount++;
+                NetClient.SocketSend("FrameChgPos," + NetClientCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY);
+            }
             KeyActive();
         }
-        if (KeyDownTm > 0f && !KeyDownFg && FramePos == 0 && FramePosY < StageNumY-1)
+        if (KeyDownTm > 0f && !KeyDownFg && FramePos == 0 && FramePosY < StageNumY-1 && NetAvlb)
         {
+            NetAvlb = false;
             FramePosY++;
             KeyDownFg = true;
+            if (SceneControl.GameNet == 1 && stagephase != 0)
+            {
+                NetHostCount++;
+                NetHost.SocketSend("FrameChgPos," + NetHostCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY);
+            }
+            if (SceneControl.GameNet == 2 && stagephase != 0)
+            {
+                NetClientCount++;
+                NetClient.SocketSend("FrameChgPos," + NetClientCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY);
+            }
             KeyActive();
         }
-        if (KeyLeftTm > 0f && !KeyLeftFg && FramePos == 0 && FramePosX > 0)
+        if (KeyLeftTm > 0f && !KeyLeftFg && FramePos == 0 && FramePosX > 0 && NetAvlb)
         {
+            NetAvlb = false;
             FramePosX--;
             KeyLeftFg = true;
+            if (SceneControl.GameNet == 1 && stagephase != 0)
+            {
+                NetHostCount++;
+                NetHost.SocketSend("FrameChgPos," + NetHostCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY);
+            }
+            if (SceneControl.GameNet == 2 && stagephase != 0)
+            {
+                NetClientCount++;
+                NetClient.SocketSend("FrameChgPos," + NetClientCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY);
+            }
             KeyActive();
         }
-        if (KeyRightTm > 0f && !KeyRightFg && FramePos == 0 && FramePosX < StageNumX-1)
+        if (KeyRightTm > 0f && !KeyRightFg && FramePos == 0 && FramePosX < StageNumX-1 && NetAvlb)
         {
+            NetAvlb = false;
             FramePosX++;
             KeyRightFg = true;
+            if (SceneControl.GameNet == 1 && stagephase != 0)
+            {
+                NetHostCount++;
+                NetHost.SocketSend("FrameChgPos," + NetHostCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY);
+            }
+            if (SceneControl.GameNet == 2 && stagephase != 0)
+            {
+                NetClientCount++;
+                NetClient.SocketSend("FrameChgPos," + NetClientCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY);
+            }
             KeyActive();
         }
-        if (KeyUpTm > 0.15f && KeyUpTm > KeyUpTm2+0.05f && FramePos == 0 && FramePosY > 0)
+        if (KeyUpTm > 0.15f && KeyUpTm > KeyUpTm2+0.05f && FramePos == 0 && FramePosY > 0 && NetAvlb)
         {
+            NetAvlb = false;
             FramePosY--;
             KeyUpTm2 = KeyUpTm2+0.05f;
+            if (SceneControl.GameNet == 1 && stagephase != 0)
+            {
+                NetHostCount++;
+                NetHost.SocketSend("FrameChgPos," + NetHostCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY);
+            }
+            if (SceneControl.GameNet == 2 && stagephase != 0)
+            {
+                NetClientCount++;
+                NetClient.SocketSend("FrameChgPos," + NetClientCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY);
+            }
             KeyActive();
         }
-        if (KeyDownTm > 0.15f && KeyDownTm > KeyDownTm2+0.05f && FramePos == 0 && FramePosY < StageNumY-1)
+        if (KeyDownTm > 0.15f && KeyDownTm > KeyDownTm2+0.05f && FramePos == 0 && FramePosY < StageNumY-1 && NetAvlb)
         {
+            NetAvlb = false;
             FramePosY++;
             KeyDownTm2 = KeyDownTm2+0.05f;
+            if (SceneControl.GameNet == 1 && stagephase != 0)
+            {
+                NetHostCount++;
+                NetHost.SocketSend("FrameChgPos," + NetHostCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY);
+            }
+            if (SceneControl.GameNet == 2 && stagephase != 0)
+            {
+                NetClientCount++;
+                NetClient.SocketSend("FrameChgPos," + NetClientCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY);
+            }
             KeyActive();
         }
-        if (KeyLeftTm > 0.15f && KeyLeftTm > KeyLeftTm2+0.05f && FramePos == 0 && FramePosX > 0)
+        if (KeyLeftTm > 0.15f && KeyLeftTm > KeyLeftTm2+0.05f && FramePos == 0 && FramePosX > 0 && NetAvlb)
         {
+            NetAvlb = false;
             FramePosX--;
             KeyLeftTm2 = KeyLeftTm2+0.05f;
+            if (SceneControl.GameNet == 1 && stagephase != 0)
+            {
+                NetHostCount++;
+                NetHost.SocketSend("FrameChgPos," + NetHostCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY);
+            }
+            if (SceneControl.GameNet == 2 && stagephase != 0)
+            {
+                NetClientCount++;
+                NetClient.SocketSend("FrameChgPos," + NetClientCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY);
+            }
             KeyActive();
         }
-        if (KeyRightTm > 0.15f && KeyRightTm > KeyRightTm2+0.05f && FramePos == 0 && FramePosX < StageNumX-1)
+        if (KeyRightTm > 0.15f && KeyRightTm > KeyRightTm2+0.05f && FramePos == 0 && FramePosX < StageNumX-1 && NetAvlb)
         {
+            NetAvlb = false;
             FramePosX++;
             KeyRightTm2 = KeyRightTm2+0.05f;
+            if (SceneControl.GameNet == 1 && stagephase != 0)
+            {
+                NetHostCount++;
+                NetHost.SocketSend("FrameChgPos," + NetHostCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY);
+            }
+            if (SceneControl.GameNet == 2 && stagephase != 0)
+            {
+                NetClientCount++;
+                NetClient.SocketSend("FrameChgPos," + NetClientCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY);
+            }
             KeyActive();
         }
         //如果上下左右被按下，則變更Frame的位置(在右上角輸入欄時)
-        if (KeyUpTm > 0f && !KeyUpFg && FramePos == 1)
+        if (KeyUpTm > 0f && !KeyUpFg && FramePos == 1 && NetAvlb)
         {
+            NetAvlb = false;
             FramePos2--;
             KeyUpFg = true;
+            if (SceneControl.GameNet == 1)
+            {
+                NetHostCount++;
+                NetHost.SocketSend("FrameChgPos," + NetHostCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY);
+            }
+            if (SceneControl.GameNet == 2)
+            {
+                NetClientCount++;
+                NetClient.SocketSend("FrameChgPos," + NetClientCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY);
+            }
             KeyActive();
         }
-        if (KeyDownTm > 0f && !KeyDownFg && FramePos == 1)
+        if (KeyDownTm > 0f && !KeyDownFg && FramePos == 1 && NetAvlb)
         {
+            NetAvlb = false;
             FramePos2++;
             KeyDownFg = true;
+            if (SceneControl.GameNet == 1)
+            {
+                NetHostCount++;
+                NetHost.SocketSend("FrameChgPos," + NetHostCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY);
+            }
+            if (SceneControl.GameNet == 2)
+            {
+                NetClientCount++;
+                NetClient.SocketSend("FrameChgPos," + NetClientCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY);
+            }
             KeyActive();
         }
-        if (KeyLeftTm > 0f && !KeyLeftFg && FramePos == 1)
+        if (KeyLeftTm > 0f && !KeyLeftFg && FramePos == 1 && NetAvlb)
         {
+            NetAvlb = false;
             FramePos2--;
             KeyLeftFg = true;
+            if (SceneControl.GameNet == 1)
+            {
+                NetHostCount++;
+                NetHost.SocketSend("FrameChgPos," + NetHostCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY);
+            }
+            if (SceneControl.GameNet == 2)
+            {
+                NetClientCount++;
+                NetClient.SocketSend("FrameChgPos," + NetClientCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY);
+            }
             KeyActive();
         }
-        if (KeyRightTm > 0f && !KeyRightFg && FramePos == 1)
+        if (KeyRightTm > 0f && !KeyRightFg && FramePos == 1 && NetAvlb)
         {
+            NetAvlb = false;
             FramePos2++;
             KeyRightFg = true;
+            if (SceneControl.GameNet == 1)
+            {
+                NetHostCount++;
+                NetHost.SocketSend("FrameChgPos," + NetHostCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY);
+            }
+            if (SceneControl.GameNet == 2)
+            {
+                NetClientCount++;
+                NetClient.SocketSend("FrameChgPos," + NetClientCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY);
+            }
             KeyActive();
         }
         if (FramePos2 < 0) {FramePos2 = 4;}
@@ -1020,19 +1238,34 @@ public class Stage : MonoBehaviour
         if (Input.GetKeyDown(",")) {KeyDownMQues = true;}
 
         //滑鼠左鍵按下彈起在創建關卡按鈕上，則創建關卡
-        if (Input.GetMouseButtonUp(0) && MouseDownLeft && HoverCrtStage && MouseDownOnBtnCrtStage && SceneControl.GameNet != 2)
+        if (Input.GetMouseButtonUp(0) && MouseDownLeft && HoverCrtStage && MouseDownOnBtnCrtStage && SceneControl.GameNet != 2 && NetAvlb)
         {
+            NetAvlb = false;
             KeyActive();
             CrtBtn();
+
+            if (SceneControl.GameNet == 1)
+            {
+                NetHostCount++;
+                NetHost.SocketSend("CrtBtn," + NetHostCount + "," + StageNumX + "," + StageNumY);
+            }
         }
-        if ((Input.GetButtonUp("Jump")||Input.GetKeyUp("h")) && FramePos == 1 && FramePos2 == 2 && SceneControl.GameNet != 2)
+        if ((Input.GetButtonUp("Jump")||Input.GetKeyUp("h")) && FramePos == 1 && FramePos2 == 2 && SceneControl.GameNet != 2 && NetAvlb)
         {
+            NetAvlb = false;
             CrtBtn();
+
+            if (SceneControl.GameNet == 1)
+            {
+                NetHostCount++;
+                NetHost.SocketSend("CrtBtn," + NetHostCount + "," + StageNumX + "," + StageNumY);
+            }
         }
 
         //滑鼠左鍵按下彈起在檢查答案按鈕上，則檢查答案
-        if (Input.GetMouseButtonUp(0) && MouseDownLeft && HoverCheckAns && MouseDownOnBtnCheckAns && stagephase == 1)
+        if (Input.GetMouseButtonUp(0) && MouseDownLeft && HoverCheckAns && MouseDownOnBtnCheckAns && stagephase == 1 && NetAvlb)
         {
+            NetAvlb = false;
             CheckBtnAnswer();
 
             if (SceneControl.GameNet == 1)
@@ -1046,8 +1279,9 @@ public class Stage : MonoBehaviour
                 NetClient.SocketSend("CheckBtnAnswer," + NetClientCount);
             }
         }
-        if ((Input.GetButtonUp("Jump")||Input.GetKeyUp("h")) && FramePos == 2 && stagephase == 1)
+        if ((Input.GetButtonUp("Jump")||Input.GetKeyUp("h")) && FramePos == 2 && stagephase == 1 && NetAvlb)
         {
+            NetAvlb = false;
             CheckBtnAnswer();
             if (SceneControl.GameNet == 1)
             {
@@ -1063,19 +1297,98 @@ public class Stage : MonoBehaviour
 
 
         //若單純只有滑鼠左鍵按下彈起，則點開該Btn內容物
-        if (Input.GetMouseButtonUp(0) && MouseDownLeft && !MouseDownRight && MouseDownOnBtn && stagephase <= 1 && HoverX != -1 && HoverY != -1)
+        if (Input.GetMouseButtonUp(0) && MouseDownLeft && !MouseDownRight && MouseDownOnBtn && stagephase == 1 && HoverX != -1 && HoverY != -1 && NetAvlb)
         {
+            NetAvlb = false;
+            FramePosX = HoverX;
+            FramePosY = HoverY;
+            KeyActive();
             BtnPress(HoverX, HoverY);
+
+            if (SceneControl.GameNet == 1)
+            {
+                NetHostCount++;
+                NetHost.SocketSend("BtnPress," + NetHostCount + "," + SelectX + "," + SelectY);
+            }
+            if (SceneControl.GameNet == 2)
+            {
+                NetClientCount++;
+                NetClient.SocketSend("BtnPress," + NetClientCount + "," + SelectX + "," + SelectY);
+            }
         }
-        if ((Input.GetButtonUp("Jump")||Input.GetKeyUp("h")) && KeyDownLeft && !KeyDownRight && stagephase <= 1 && FramePos == 0)
+        if ((Input.GetButtonUp("Jump")||Input.GetKeyUp("h")) && KeyDownLeft && !KeyDownRight && stagephase == 1 && FramePos == 0 && NetAvlb)
         {
+            NetAvlb = false;
+            KeyActive();
             BtnPress(FramePosX, FramePosY);
+
+            if (SceneControl.GameNet == 1)
+            {
+                NetHostCount++;
+                NetHost.SocketSend("BtnPress," + NetHostCount + "," + SelectX + "," + SelectY);
+            }
+            if (SceneControl.GameNet == 2)
+            {
+                NetClientCount++;
+                NetClient.SocketSend("BtnPress," + NetClientCount + "," + SelectX + "," + SelectY);
+            }
+        }
+        if (Input.GetMouseButtonUp(0) && MouseDownLeft && !MouseDownRight && MouseDownOnBtn && stagephase == 0 && HoverX != -1 && HoverY != -1 && NetAvlb)
+        {
+            NetAvlb = false;
+            FramePosX = HoverX;
+            FramePosY = HoverY;
+            Frame2Pos = 0;
+            Frame2PosX = 0;
+            Frame2PosY = 0;
+            KeyActive();
+            BtnPress(HoverX, HoverY);
+
+            if (SceneControl.GameNet == 1)
+            {
+                NetHostCount++;
+                string strtmp = "BtnPressInit," + NetHostCount + "," + StageNumMPlus + "," + StageNumMMinus + "," + SelectX + "," + SelectY;
+                for (int i = 1; i <= 30; i++)
+                {
+                    for (int j = 1; j <= 25; j++)
+                    {
+                        strtmp = strtmp + "," + sgmine[i-1,j-1];
+                    }
+                }
+                NetHost.SocketSend(strtmp);
+            }
+        }
+        if ((Input.GetButtonUp("Jump")||Input.GetKeyUp("h")) && KeyDownLeft && !KeyDownRight && stagephase == 0 && FramePos == 0 && NetAvlb)
+        {
+            NetAvlb = false;
+            Frame2Pos = 0;
+            Frame2PosX = 0;
+            Frame2PosY = 0;
+            KeyActive();
+            BtnPress(FramePosX, FramePosY);
+
+            if (SceneControl.GameNet == 1)
+            {
+                NetHostCount++;
+                string strtmp = "BtnPressInit," + NetHostCount + "," + StageNumMPlus + "," + StageNumMMinus + "," + SelectX + "," + SelectY;
+                for (int i = 1; i <= 30; i++)
+                {
+                    for (int j = 1; j <= 25; j++)
+                    {
+                        strtmp = strtmp + "," + sgmine[i-1,j-1];
+                    }
+                }
+                NetHost.SocketSend(strtmp);
+            }
         }
 
         //若單純只有滑鼠右鍵按下彈起，則開關預測可能為地雷的功能
-        if (Input.GetMouseButtonUp(1) && !MouseDownLeft && MouseDownRight && MouseDownOnBtn && stagephase == 1 && HoverX != -1 && HoverY != -1)
+        if (Input.GetMouseButtonUp(1) && !MouseDownLeft && MouseDownRight && MouseDownOnBtn && stagephase == 1 && HoverX != -1 && HoverY != -1 && NetAvlb)
         {
-
+            NetAvlb = false;
+            FramePosX = HoverX;
+            FramePosY = HoverY;
+            KeyActive();
             BtnPredict(HoverX, HoverY, 0);
             if (SceneControl.GameNet == 1)
             {
@@ -1088,8 +1401,12 @@ public class Stage : MonoBehaviour
                 NetClient.SocketSend("BtnPredict," + NetClientCount + "," + HoverX + "," + HoverY + ",0");
             }
         }
-        if ((Input.GetButtonUp("Fire1")||Input.GetKeyUp("j")) && !KeyDownLeft && KeyDownRight && stagephase == 1 && FramePos == 0)
+        if ((Input.GetButtonUp("Fire1")||Input.GetKeyUp("j")) && !KeyDownLeft && KeyDownRight && stagephase == 1 && FramePos == 0 && NetAvlb)
         {
+            NetAvlb = false;
+            FramePosX = HoverX;
+            FramePosY = HoverY;
+            KeyActive();
             BtnPredict(FramePosX, FramePosY, 0);
             if (SceneControl.GameNet == 1)
             {
@@ -1102,8 +1419,12 @@ public class Stage : MonoBehaviour
                 NetClient.SocketSend("BtnPredict," + NetClientCount + "," + HoverX + "," + HoverY + ",0");
             }
         }
-        if (Input.GetKeyUp("n") && KeyDownMPlus && stagephase == 1 && FramePos == 0)
+        if (Input.GetKeyUp("n") && KeyDownMPlus && stagephase == 1 && FramePos == 0 && NetAvlb)
         {
+            NetAvlb = false;
+            FramePosX = HoverX;
+            FramePosY = HoverY;
+            KeyActive();
             BtnPredict(FramePosX, FramePosY, 1);
             if (SceneControl.GameNet == 1)
             {
@@ -1116,8 +1437,12 @@ public class Stage : MonoBehaviour
                 NetClient.SocketSend("BtnPredict," + NetClientCount + "," + HoverX + "," + HoverY + ",1");
             }
         }
-        if (Input.GetKeyUp("m") && KeyDownMMinus && stagephase == 1 && FramePos == 0)
+        if (Input.GetKeyUp("m") && KeyDownMMinus && stagephase == 1 && FramePos == 0 && NetAvlb)
         {
+            NetAvlb = false;
+            FramePosX = HoverX;
+            FramePosY = HoverY;
+            KeyActive();
             BtnPredict(FramePosX, FramePosY, 2);
             if (SceneControl.GameNet == 1)
             {
@@ -1130,8 +1455,12 @@ public class Stage : MonoBehaviour
                 NetClient.SocketSend("BtnPredict," + NetClientCount + "," + HoverX + "," + HoverY + ",2");
             }
         }
-        if (Input.GetKeyUp(",") && KeyDownMQues && stagephase == 1 && FramePos == 0)
+        if (Input.GetKeyUp(",") && KeyDownMQues && stagephase == 1 && FramePos == 0 && NetAvlb)
         {
+            NetAvlb = false;
+            FramePosX = HoverX;
+            FramePosY = HoverY;
+            KeyActive();
             BtnPredict(FramePosX, FramePosY, 3);
             if (SceneControl.GameNet == 1)
             {
@@ -1146,8 +1475,12 @@ public class Stage : MonoBehaviour
         }
 
         //若滑鼠左鍵與滑鼠右鍵同時按下並且其中一鍵彈起，則確認附近8格Btn預測地雷數與點下Btn數值是否相同，進而開拓其他位置的Btn
-        if ((Input.GetMouseButtonUp(0)||Input.GetMouseButtonUp(1)) && stagephase == 1 && MouseDownLeft && MouseDownRight && MouseDownOnBtn && HoverX != -1 && HoverY != -1)
+        if ((Input.GetMouseButtonUp(0)||Input.GetMouseButtonUp(1)) && stagephase == 1 && MouseDownLeft && MouseDownRight && MouseDownOnBtn && HoverX != -1 && HoverY != -1 && NetAvlb)
         {
+            NetAvlb = false;
+            FramePosX = HoverX;
+            FramePosY = HoverY;
+            KeyActive();
             BtnEightCheck(HoverX, HoverY);
             if (SceneControl.GameNet == 1)
             {
@@ -1160,8 +1493,12 @@ public class Stage : MonoBehaviour
                 NetClient.SocketSend("BtnEightCheck," + NetClientCount + "," + SelectX + "," + SelectY);
             }
         }
-        if ((Input.GetButtonUp("Jump")||Input.GetKeyUp("h")||Input.GetButtonUp("Fire1")||Input.GetKeyUp("j")) && stagephase == 1 && KeyDownLeft && KeyDownRight && FramePos == 0)
+        if ((Input.GetButtonUp("Jump")||Input.GetKeyUp("h")||Input.GetButtonUp("Fire1")||Input.GetKeyUp("j")) && stagephase == 1 && KeyDownLeft && KeyDownRight && FramePos == 0 && NetAvlb)
         {
+            NetAvlb = false;
+            FramePosX = HoverX;
+            FramePosY = HoverY;
+            KeyActive();
             BtnEightCheck(FramePosX, FramePosY);
             if (SceneControl.GameNet == 1)
             {
@@ -1209,8 +1546,9 @@ public class Stage : MonoBehaviour
         }
 
         //偵測螢幕大小是否變更
-        if ((ScnX != Screen.width || ScnY != Screen.height) && CreateBtnFlag)
+        if ((ScnX != Screen.width || ScnY != Screen.height) && CreateBtnFlag && NetAvlb)
         {
+            NetAvlb = false;
             //移除所有已創建的Btn
             DestroyBtn();
             BtnCheckAns.GetComponent<Button>().interactable = false;

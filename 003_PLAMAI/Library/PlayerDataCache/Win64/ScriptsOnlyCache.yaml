@@ -506,7 +506,7 @@ ScriptsOnlyBuild:
     className: BaseInput
   - hash:
       serializedVersion: 2
-      Hash: d01053a311020bd54a461883ab79e9c0
+      Hash: 560f365d5428cf7c47eb601455b37f65
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: Stage
