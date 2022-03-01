@@ -1159,10 +1159,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1118753521}
   - component: {fileID: 1118753520}
-  - component: {fileID: 1118753519}
-  - component: {fileID: 1118753524}
-  - component: {fileID: 1118753523}
-  - component: {fileID: 1118753522}
   m_Layer: 5
   m_Name: MainCamera
   m_TagString: Untagged
@@ -1170,14 +1166,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!81 &1118753519
-AudioListener:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1118753518}
-  m_Enabled: 1
 --- !u!20 &1118753520
 Camera:
   m_ObjectHideFlags: 0
@@ -1240,49 +1228,6 @@ RectTransform:
   m_AnchoredPosition: {x: 639, y: 366}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &1118753522
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1118753518}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 324f877f2ac4a014ba2dd326ac4e917d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  Camera: {fileID: 1118753518}
---- !u!114 &1118753523
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1118753518}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4b831ae6f3cb7564b9a98623b1626567, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  TextRecieve: {fileID: 1253802038}
-  IFMsg: {fileID: 0}
-  BtnMsg: {fileID: 0}
---- !u!114 &1118753524
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1118753518}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 597d3d47529908642be413b9beb3f081, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  TextRecieve: {fileID: 1253802038}
-  IFMsg: {fileID: 0}
-  BtnMsg: {fileID: 0}
 --- !u!1 &1120342198
 GameObject:
   m_ObjectHideFlags: 0

@@ -12,6 +12,8 @@ public class NetHost : MonoBehaviour
     public Text TextRecieve;
     public InputField IFMsg;
     public Button BtnMsg;
+    public static string strAryTotal = ""; //String Array Total，將接收到的對方指令集結成同一個string，右進左出
+    public static string recvStrPcs = "";
     string editString=""; //編輯框文字
 
     //以下預設都是私有的成員
@@ -20,11 +22,10 @@ public class NetHost : MonoBehaviour
     IPEndPoint ipEnd; //偵聽埠
     int roomnum; //接收的字串
     string TextRecieveStr;
-    bool TextRecieveFg = false;
-    public static string recvStr; //接收的字串
+    public static string recvStr = ""; //接收的字串
     public static string sendStr = ""; //傳送的字串
-    byte[] recvData=new byte[2048]; //接收的資料，必須為位元組
-    public static byte[] sendData=new byte[2048]; //傳送的資料，必須為位元組
+    byte[] recvData=new byte[8192]; //接收的資料，必須為位元組
+    byte[] sendData=new byte[8192]; //傳送的資料，必須為位元組
     int recvLen; //接收的資料長度
     Thread connectThread; //連線執行緒
 
@@ -52,29 +53,34 @@ public class NetHost : MonoBehaviour
             clientSocket.Close();
         //控制檯輸出偵聽狀態
         TextRecieveStr = "已建立房號"+roomnum+"，等待客戶端連結...\n"+TextRecieveStr;
-        TextRecieveFg = true;
         //一旦接受連線，建立一個客戶端
         clientSocket=serverSocket.Accept();
         //獲取客戶端的IP和埠
         IPEndPoint ipEndClient=(IPEndPoint)clientSocket.RemoteEndPoint;
         //輸出客戶端的IP和埠
         TextRecieveStr = "連結到位址"+ipEndClient.Address.ToString()+":"+ipEndClient.Port.ToString()+"\n"+TextRecieveStr;
-        TextRecieveFg = true;
         //連線成功則傳送資料
-        sendStr="歡迎來到房間"+roomnum.ToString();
-        SocketSend(sendStr);
-        sendStr = "";
+        StringIntegrate("歡迎來到房間"+roomnum.ToString()+";");
         TextRecieveStr = "您已連線成功\n"+TextRecieveStr;
-        TextRecieveFg = true;
         SceneControl.GameNetFg = true;
     }
 
-    public static void SocketSend(string sendStrTmp)
+    public static void StringIntegrate(string sendStrTmp)
+    {
+        //判斷歷史傳輸數據是否有值
+        if (sendStr == "")
+            sendStr = sendStrTmp;
+        else
+            sendStr = sendStr + sendStrTmp;
+        Debug.Log("sendStr = " + sendStr);
+    }
+
+    void SocketSend()
     {
         //清空傳送快取
-        sendData=new byte[2048];
+        sendData=new byte[8192];
         //資料型別轉換
-        sendData=Encoding.UTF8.GetBytes(sendStrTmp);
+        sendData=Encoding.UTF8.GetBytes(sendStr);
         //傳送
         clientSocket.Send(sendData,sendData.Length,SocketFlags.None);
     }
@@ -88,7 +94,7 @@ public class NetHost : MonoBehaviour
         while(true)
         {
             //對data清零
-            recvData=new byte[2048];
+            recvData=new byte[8192];
             //獲取收到的資料的長度
             recvLen=clientSocket.Receive(recvData);
             //如果收到的資料長度為0，則重連並進入下一個迴圈
@@ -98,18 +104,11 @@ public class NetHost : MonoBehaviour
                 continue;
             }
             //輸出接收到的資料
-            recvStr=Encoding.UTF8.GetString(recvData,0,recvLen);
-            TextRecieveStr = "收到訊息: "+recvStr+"\n"+TextRecieveStr;
-            TextRecieveFg = true;
-            // //將接收到的資料經過處理再發送出去
-            // sendStr=recvStr;
-            // SocketSend(sendStr);
-            //如果發送的資料不為空值則發送資料
-            if (sendStr != "")
-            {
-                SocketSend(sendStr);
-                sendStr = "";
-            }
+            if (recvStr != "")
+                recvStr=recvStr+Encoding.UTF8.GetString(recvData,0,recvLen);
+            else
+                recvStr=Encoding.UTF8.GetString(recvData,0,recvLen);
+            Debug.Log("recvStr= " + recvStr);
         }
     }
 
@@ -130,7 +129,6 @@ public class NetHost : MonoBehaviour
         {
             serverSocket.Close();
             TextRecieveStr = "連線斷開\n"+TextRecieveStr;
-            TextRecieveFg = true;
         }
     }
 
@@ -146,19 +144,41 @@ public class NetHost : MonoBehaviour
 
     void BtnClick()
     {
-        editString = IFMsg.text;
-        SocketSend(editString);
+        editString = IFMsg.text+";";
+        StringIntegrate(editString);
     }
 
 
     // Update is called once per frame
     void Update()
     {
-        if (TextRecieveFg && SceneControl.GameNet >= 1)
+        if (SceneControl.GameNet == 1 && (strAryTotal != "" || recvStr != ""))
+        {
+            if (recvStr != "" && strAryTotal != "")
+                strAryTotal = strAryTotal + recvStr;
+            else if (recvStr != "" && strAryTotal == "")
+                strAryTotal = recvStr;
+            string[] strAryLarge = strAryTotal.Split(';');
+            recvStr = "";
+            recvStrPcs = strAryLarge[0];
+            TextRecieveStr = "收到訊息: "+recvStrPcs+"\n"+TextRecieveStr;
+            if (strAryTotal.Length > 0 && strAryLarge.Length > 2)
+                strAryTotal = strAryTotal.Remove(0,strAryLarge[0].Length+1);
+            else
+                strAryTotal = "";
+            Debug.Log("strAryTotal= " + strAryTotal);
+        }
+
+        if (SceneControl.GameNet >= 1 && TextRecieveStr != "" && !SceneControl.GameStartFg)
         {
             TextRecieve.text = TextRecieveStr + TextRecieve.text;
             TextRecieveStr = "";
-            TextRecieveFg = false;
+        }
+
+        if (sendStr != "")
+        {
+            SocketSend();
+            sendStr = "";
         }
     }
 

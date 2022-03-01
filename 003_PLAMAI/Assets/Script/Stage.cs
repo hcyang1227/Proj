@@ -766,47 +766,46 @@ public class Stage : MonoBehaviour
     void Update()
     {
 
-        if (SceneControl.GameNet == 1 && NetHost.recvStr != "")
+        if (SceneControl.GameNet == 1 && NetHost.recvStrPcs != "")
         {
-            Debug.Log(NetHost.recvStr);
-            string[] strAry = NetHost.recvStr.Split(',');
+            string[] strAry = NetHost.recvStrPcs.Split(',');
             switch (strAry[0])
             {
                 case "BtnPress":
                     NetClientGetCount++;
                     if (int.Parse(strAry[1]) == NetClientGetCount)
                     {
-                        BtnPress(int.Parse(strAry[2]),int.Parse(strAry[3]));
                         Frame2Pos = 0;
                         Frame2PosX = int.Parse(strAry[2]);
                         Frame2PosY = int.Parse(strAry[3]);
+                        BtnPress(int.Parse(strAry[2]),int.Parse(strAry[3]));
                         KeyActive();
                     }
-                    else {uiText.text = "<color=red>連線出錯>___<</color>\n" + uiText.text;}
+                    else {uiText.text = "<color=red>BtnPress連線出錯>___<</color>\n" + uiText.text;}
                     break;
                 case "BtnPredict":
                     NetClientGetCount++;
                     if (int.Parse(strAry[1]) == NetClientGetCount)
                     {
-                        BtnPredict(int.Parse(strAry[2]),int.Parse(strAry[3]),int.Parse(strAry[4]));
                         Frame2Pos = 0;
                         Frame2PosX = int.Parse(strAry[2]);
                         Frame2PosY = int.Parse(strAry[3]);
+                        BtnPredict(int.Parse(strAry[2]),int.Parse(strAry[3]),int.Parse(strAry[4]));
                         KeyActive();
                     }
-                    else {uiText.text = "<color=red>連線出錯>___<</color>\n" + uiText.text;}
+                    else {uiText.text = "<color=red>BtnPredict連線出錯>___<</color>\n" + uiText.text;}
                     break;
                 case "BtnEightCheck":
                     NetClientGetCount++;
                     if (int.Parse(strAry[1]) == NetClientGetCount)
                     {
-                        BtnEightCheck(int.Parse(strAry[2]),int.Parse(strAry[3]));
                         Frame2Pos = 0;
                         Frame2PosX = int.Parse(strAry[2]);
                         Frame2PosY = int.Parse(strAry[3]);
+                        BtnEightCheck(int.Parse(strAry[2]),int.Parse(strAry[3]));
                         KeyActive();
                     }
-                    else {uiText.text = "<color=red>連線出錯>___<</color>\n" + uiText.text;}
+                    else {uiText.text = "<color=red>BtnEightCheck連線出錯>___<</color>\n" + uiText.text;}
                     break;
                 case "CheckBtnAnswer":
                     NetClientGetCount++;
@@ -814,7 +813,7 @@ public class Stage : MonoBehaviour
                     {
                         CheckBtnAnswer();
                     }
-                    else {uiText.text = "<color=red>連線出錯>___<</color>\n" + uiText.text;}
+                    else {uiText.text = "<color=red>CheckBtnAnswer連線出錯>___<</color>\n" + uiText.text;}
                     break;
                 case "FrameChgPos":
                     NetClientGetCount++;
@@ -826,7 +825,7 @@ public class Stage : MonoBehaviour
                         Frame2PosY = int.Parse(strAry[5]);
                         KeyActive();
                     }
-                    else {uiText.text = "<color=red>連線出錯>___<</color>\n" + uiText.text;}
+                    else {uiText.text = "<color=red>FrameChgPos連線出錯>___<</color>\n" + uiText.text;}
                     break;
                 case "Alarm":
                     switch (strAry[2])
@@ -837,6 +836,8 @@ public class Stage : MonoBehaviour
                             SetController(true);
                             FramePos = 1;
                             FramePos2 = 2;
+                            Frame2Pos = 1;
+                            Frame2Pos2 = 2;
                             KeyActive();
                             break;
                         default:
@@ -845,16 +846,16 @@ public class Stage : MonoBehaviour
                     uiText.text = "<color=red>錯誤" + int.Parse(strAry[2]) + ": " + strAry[3] + "</color>\n" + uiText.text;
                     break;
                 default:
-                    uiText.text = "<color=red>不明的指令@___@</color> " + NetHost.recvStr + "\n" + uiText.text;
+                    uiText.text = "<color=red>不明的指令@___@</color> " + "\n" + uiText.text;
                     break;
             }
-            NetHost.recvStr = "";
+            // uiText.text = "recvStrPcs= " + NetHost.recvStrPcs + "\n" + uiText.text;
+            NetHost.recvStrPcs = "";
         }
 
-        if (SceneControl.GameNet == 2 && NetClient.recvStr != "")
+        if (SceneControl.GameNet == 2 && NetClient.recvStrPcs != "")
         {
-            Debug.Log(NetClient.recvStr);
-            string[] strAry = NetClient.recvStr.Split(',');
+            string[] strAry = NetClient.recvStrPcs.Split(',');
             switch (strAry[0])
             {
                 case "CrtBtn":
@@ -868,7 +869,7 @@ public class Stage : MonoBehaviour
                         StageNumY = int.Parse(strAry[3]);
                         uiText.text = "<color=magenta>服務端已決定棋盤大小...</color>\n" + uiText.text;
                     }
-                    else {uiText.text = "<color=red>連線出錯>___<</color>\n" + uiText.text;}
+                    else {uiText.text = "<color=red>CrtBtn連線出錯>___<</color>\n" + uiText.text;}
                     break;
                 case "BtnPressInit":
                     NetHostGetCount++;
@@ -886,50 +887,50 @@ public class Stage : MonoBehaviour
                                 sgmine[i-1,j-1] = int.Parse(strAry[i*25+j-20]);
                             }
                         }
-                        BtnPress(int.Parse(strAry[4]),int.Parse(strAry[5]));
                         Frame2Pos = 0;
                         Frame2PosX = int.Parse(strAry[4]);
                         Frame2PosY = int.Parse(strAry[5]);
+                        BtnPress(int.Parse(strAry[4]),int.Parse(strAry[5]));
                         KeyActive();
                         uiText.text = "<color=magenta>服務端已決定地雷數量並開始遊戲...</color>\n" + uiText.text;
                     }
-                    else {uiText.text = "<color=red>連線出錯>___<</color>\n" + uiText.text;}
+                    else {uiText.text = "<color=red>BtnPressInit連線出錯>___<</color>\n" + uiText.text;}
                     break;
                 case "BtnPress":
                     NetHostGetCount++;
                     if (int.Parse(strAry[1]) == NetHostGetCount)
                     {
-                        BtnPress(int.Parse(strAry[2]),int.Parse(strAry[3]));
                         Frame2Pos = 0;
                         Frame2PosX = int.Parse(strAry[2]);
                         Frame2PosY = int.Parse(strAry[3]);
+                        BtnPress(int.Parse(strAry[2]),int.Parse(strAry[3]));
                         KeyActive();
                     }
-                    else {uiText.text = "<color=red>連線出錯>___<</color>\n" + uiText.text;}
+                    else {uiText.text = "<color=red>BtnPress連線出錯>___<</color>\n" + uiText.text;}
                     break;
                 case "BtnPredict":
                     NetHostGetCount++;
                     if (int.Parse(strAry[1]) == NetHostGetCount)
                     {
-                        BtnPredict(int.Parse(strAry[2]),int.Parse(strAry[3]),int.Parse(strAry[4]));
                         Frame2Pos = 0;
                         Frame2PosX = int.Parse(strAry[2]);
                         Frame2PosY = int.Parse(strAry[3]);
+                        BtnPredict(int.Parse(strAry[2]),int.Parse(strAry[3]),int.Parse(strAry[4]));
                         KeyActive();
                     }
-                    else {uiText.text = "<color=red>連線出錯>___<</color>\n" + uiText.text;}
+                    else {uiText.text = "<color=red>BtnPredict連線出錯>___<</color>\n" + uiText.text;}
                     break;
                 case "BtnEightCheck":
                     NetHostGetCount++;
                     if (int.Parse(strAry[1]) == NetHostGetCount)
                     {
-                        BtnEightCheck(int.Parse(strAry[2]),int.Parse(strAry[3]));
                         Frame2Pos = 0;
                         Frame2PosX = int.Parse(strAry[2]);
                         Frame2PosY = int.Parse(strAry[3]);
+                        BtnEightCheck(int.Parse(strAry[2]),int.Parse(strAry[3]));
                         KeyActive();
                     }
-                    else {uiText.text = "<color=red>連線出錯>___<</color>\n" + uiText.text;}
+                    else {uiText.text = "<color=red>BtnEightCheck連線出錯>___<</color>\n" + uiText.text;}
                     break;
                 case "CheckBtnAnswer":
                     NetHostGetCount++;
@@ -937,7 +938,7 @@ public class Stage : MonoBehaviour
                     {
                         CheckBtnAnswer();
                     }
-                    else {uiText.text = "<color=red>連線出錯>___<</color>\n" + uiText.text;}
+                    else {uiText.text = "<color=red>CheckBtnAnswer連線出錯>___<</color>\n" + uiText.text;}
                     break;
                 case "FrameChgPos":
                     NetHostGetCount++;
@@ -949,7 +950,7 @@ public class Stage : MonoBehaviour
                         Frame2PosY = int.Parse(strAry[5]);
                         KeyActive();
                     }
-                    else {uiText.text = "<color=red>連線出錯>___<</color>\n" + uiText.text;}
+                    else {uiText.text = "<color=red>FrameChgPos連線出錯>___<</color>\n" + uiText.text;}
                     break;
                 case "Alarm":
                     switch (strAry[2])
@@ -960,6 +961,8 @@ public class Stage : MonoBehaviour
                             SetController(true);
                             FramePos = 1;
                             FramePos2 = 2;
+                            Frame2Pos = 1;
+                            Frame2Pos2 = 2;
                             KeyActive();
                             break;
                         default:
@@ -968,10 +971,11 @@ public class Stage : MonoBehaviour
                     uiText.text = "<color=red>錯誤" + int.Parse(strAry[2]) + ": " + strAry[3] + "</color>\n" + uiText.text;
                     break;
                 default:
-                    uiText.text = "<color=red>不明的指令@___@</color> " + NetClient.recvStr + "\n" + uiText.text;
+                    uiText.text = "<color=red>不明的指令@___@</color> " + "\n" + uiText.text;
                     break;
             }
-            NetClient.recvStr = "";
+            // uiText.text = "recvStrPcs= " + NetClient.recvStrPcs + "\n" + uiText.text;
+            NetClient.recvStrPcs = "";
         }
 
         NetAvlb = true;
@@ -997,12 +1001,12 @@ public class Stage : MonoBehaviour
             if (SceneControl.GameNet == 1 && stagephase != 0)
             {
                 NetHostCount++;
-                NetHost.SocketSend("FrameChgPos," + NetHostCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY);
+                NetHost.StringIntegrate("FrameChgPos," + NetHostCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY + ";");
             }
             if (SceneControl.GameNet == 2 && stagephase != 0)
             {
                 NetClientCount++;
-                NetClient.SocketSend("FrameChgPos," + NetClientCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY);
+                NetClient.StringIntegrate("FrameChgPos," + NetClientCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY + ";");
             }
             KeyActive();
         }
@@ -1024,12 +1028,12 @@ public class Stage : MonoBehaviour
             if (SceneControl.GameNet == 1 && stagephase != 0)
             {
                 NetHostCount++;
-                NetHost.SocketSend("FrameChgPos," + NetHostCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY);
+                NetHost.StringIntegrate("FrameChgPos," + NetHostCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY + ";");
             }
             if (SceneControl.GameNet == 2 && stagephase != 0)
             {
                 NetClientCount++;
-                NetClient.SocketSend("FrameChgPos," + NetClientCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY);
+                NetClient.StringIntegrate("FrameChgPos," + NetClientCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY + ";");
             }
             KeyActive();
         }
@@ -1041,12 +1045,12 @@ public class Stage : MonoBehaviour
             if (SceneControl.GameNet == 1 && stagephase != 0)
             {
                 NetHostCount++;
-                NetHost.SocketSend("FrameChgPos," + NetHostCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY);
+                NetHost.StringIntegrate("FrameChgPos," + NetHostCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY + ";");
             }
             if (SceneControl.GameNet == 2 && stagephase != 0)
             {
                 NetClientCount++;
-                NetClient.SocketSend("FrameChgPos," + NetClientCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY);
+                NetClient.StringIntegrate("FrameChgPos," + NetClientCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY + ";");
             }
             KeyActive();
         }
@@ -1058,12 +1062,12 @@ public class Stage : MonoBehaviour
             if (SceneControl.GameNet == 1 && stagephase != 0)
             {
                 NetHostCount++;
-                NetHost.SocketSend("FrameChgPos," + NetHostCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY);
+                NetHost.StringIntegrate("FrameChgPos," + NetHostCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY + ";");
             }
             if (SceneControl.GameNet == 2 && stagephase != 0)
             {
                 NetClientCount++;
-                NetClient.SocketSend("FrameChgPos," + NetClientCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY);
+                NetClient.StringIntegrate("FrameChgPos," + NetClientCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY + ";");
             }
             KeyActive();
         }
@@ -1075,12 +1079,12 @@ public class Stage : MonoBehaviour
             if (SceneControl.GameNet == 1 && stagephase != 0)
             {
                 NetHostCount++;
-                NetHost.SocketSend("FrameChgPos," + NetHostCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY);
+                NetHost.StringIntegrate("FrameChgPos," + NetHostCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY + ";");
             }
             if (SceneControl.GameNet == 2 && stagephase != 0)
             {
                 NetClientCount++;
-                NetClient.SocketSend("FrameChgPos," + NetClientCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY);
+                NetClient.StringIntegrate("FrameChgPos," + NetClientCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY + ";");
             }
             KeyActive();
         }
@@ -1092,12 +1096,12 @@ public class Stage : MonoBehaviour
             if (SceneControl.GameNet == 1 && stagephase != 0)
             {
                 NetHostCount++;
-                NetHost.SocketSend("FrameChgPos," + NetHostCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY);
+                NetHost.StringIntegrate("FrameChgPos," + NetHostCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY + ";");
             }
             if (SceneControl.GameNet == 2 && stagephase != 0)
             {
                 NetClientCount++;
-                NetClient.SocketSend("FrameChgPos," + NetClientCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY);
+                NetClient.StringIntegrate("FrameChgPos," + NetClientCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY + ";");
             }
             KeyActive();
         }
@@ -1109,12 +1113,12 @@ public class Stage : MonoBehaviour
             if (SceneControl.GameNet == 1 && stagephase != 0)
             {
                 NetHostCount++;
-                NetHost.SocketSend("FrameChgPos," + NetHostCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY);
+                NetHost.StringIntegrate("FrameChgPos," + NetHostCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY + ";");
             }
             if (SceneControl.GameNet == 2 && stagephase != 0)
             {
                 NetClientCount++;
-                NetClient.SocketSend("FrameChgPos," + NetClientCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY);
+                NetClient.StringIntegrate("FrameChgPos," + NetClientCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY + ";");
             }
             KeyActive();
         }
@@ -1126,12 +1130,12 @@ public class Stage : MonoBehaviour
             if (SceneControl.GameNet == 1 && stagephase != 0)
             {
                 NetHostCount++;
-                NetHost.SocketSend("FrameChgPos," + NetHostCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY);
+                NetHost.StringIntegrate("FrameChgPos," + NetHostCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY + ";");
             }
             if (SceneControl.GameNet == 2 && stagephase != 0)
             {
                 NetClientCount++;
-                NetClient.SocketSend("FrameChgPos," + NetClientCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY);
+                NetClient.StringIntegrate("FrameChgPos," + NetClientCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY + ";");
             }
             KeyActive();
         }
@@ -1143,12 +1147,12 @@ public class Stage : MonoBehaviour
             if (SceneControl.GameNet == 1 && stagephase != 0)
             {
                 NetHostCount++;
-                NetHost.SocketSend("FrameChgPos," + NetHostCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY);
+                NetHost.StringIntegrate("FrameChgPos," + NetHostCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY + ";");
             }
             if (SceneControl.GameNet == 2 && stagephase != 0)
             {
                 NetClientCount++;
-                NetClient.SocketSend("FrameChgPos," + NetClientCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY);
+                NetClient.StringIntegrate("FrameChgPos," + NetClientCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY + ";");
             }
             KeyActive();
         }
@@ -1161,12 +1165,12 @@ public class Stage : MonoBehaviour
             if (SceneControl.GameNet == 1)
             {
                 NetHostCount++;
-                NetHost.SocketSend("FrameChgPos," + NetHostCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY);
+                NetHost.StringIntegrate("FrameChgPos," + NetHostCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY + ";");
             }
             if (SceneControl.GameNet == 2)
             {
                 NetClientCount++;
-                NetClient.SocketSend("FrameChgPos," + NetClientCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY);
+                NetClient.StringIntegrate("FrameChgPos," + NetClientCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY + ";");
             }
             KeyActive();
         }
@@ -1178,12 +1182,12 @@ public class Stage : MonoBehaviour
             if (SceneControl.GameNet == 1)
             {
                 NetHostCount++;
-                NetHost.SocketSend("FrameChgPos," + NetHostCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY);
+                NetHost.StringIntegrate("FrameChgPos," + NetHostCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY + ";");
             }
             if (SceneControl.GameNet == 2)
             {
                 NetClientCount++;
-                NetClient.SocketSend("FrameChgPos," + NetClientCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY);
+                NetClient.StringIntegrate("FrameChgPos," + NetClientCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY + ";");
             }
             KeyActive();
         }
@@ -1195,12 +1199,12 @@ public class Stage : MonoBehaviour
             if (SceneControl.GameNet == 1)
             {
                 NetHostCount++;
-                NetHost.SocketSend("FrameChgPos," + NetHostCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY);
+                NetHost.StringIntegrate("FrameChgPos," + NetHostCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY + ";");
             }
             if (SceneControl.GameNet == 2)
             {
                 NetClientCount++;
-                NetClient.SocketSend("FrameChgPos," + NetClientCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY);
+                NetClient.StringIntegrate("FrameChgPos," + NetClientCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY + ";");
             }
             KeyActive();
         }
@@ -1212,12 +1216,12 @@ public class Stage : MonoBehaviour
             if (SceneControl.GameNet == 1)
             {
                 NetHostCount++;
-                NetHost.SocketSend("FrameChgPos," + NetHostCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY);
+                NetHost.StringIntegrate("FrameChgPos," + NetHostCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY + ";");
             }
             if (SceneControl.GameNet == 2)
             {
                 NetClientCount++;
-                NetClient.SocketSend("FrameChgPos," + NetClientCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY);
+                NetClient.StringIntegrate("FrameChgPos," + NetClientCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY + ";");
             }
             KeyActive();
         }
@@ -1247,7 +1251,7 @@ public class Stage : MonoBehaviour
             if (SceneControl.GameNet == 1)
             {
                 NetHostCount++;
-                NetHost.SocketSend("CrtBtn," + NetHostCount + "," + StageNumX + "," + StageNumY);
+                NetHost.StringIntegrate("CrtBtn," + NetHostCount + "," + StageNumX + "," + StageNumY + ";");
             }
         }
         if ((Input.GetButtonUp("Jump")||Input.GetKeyUp("h")) && FramePos == 1 && FramePos2 == 2 && SceneControl.GameNet != 2 && NetAvlb)
@@ -1258,7 +1262,7 @@ public class Stage : MonoBehaviour
             if (SceneControl.GameNet == 1)
             {
                 NetHostCount++;
-                NetHost.SocketSend("CrtBtn," + NetHostCount + "," + StageNumX + "," + StageNumY);
+                NetHost.StringIntegrate("CrtBtn," + NetHostCount + "," + StageNumX + "," + StageNumY + ";");
             }
         }
 
@@ -1271,12 +1275,12 @@ public class Stage : MonoBehaviour
             if (SceneControl.GameNet == 1)
             {
                 NetHostCount++;
-                NetHost.SocketSend("CheckBtnAnswer," + NetHostCount);
+                NetHost.StringIntegrate("CheckBtnAnswer," + NetHostCount + ";");
             }
             if (SceneControl.GameNet == 2)
             {
                 NetClientCount++;
-                NetClient.SocketSend("CheckBtnAnswer," + NetClientCount);
+                NetClient.StringIntegrate("CheckBtnAnswer," + NetClientCount + ";");
             }
         }
         if ((Input.GetButtonUp("Jump")||Input.GetKeyUp("h")) && FramePos == 2 && stagephase == 1 && NetAvlb)
@@ -1286,12 +1290,12 @@ public class Stage : MonoBehaviour
             if (SceneControl.GameNet == 1)
             {
                 NetHostCount++;
-                NetHost.SocketSend("CheckBtnAnswer," + NetHostCount);
+                NetHost.StringIntegrate("CheckBtnAnswer," + NetHostCount + ";");
             }
             if (SceneControl.GameNet == 2)
             {
                 NetClientCount++;
-                NetClient.SocketSend("CheckBtnAnswer," + NetClientCount);
+                NetClient.StringIntegrate("CheckBtnAnswer," + NetClientCount + ";");
             }
         }
 
@@ -1308,12 +1312,12 @@ public class Stage : MonoBehaviour
             if (SceneControl.GameNet == 1)
             {
                 NetHostCount++;
-                NetHost.SocketSend("BtnPress," + NetHostCount + "," + SelectX + "," + SelectY);
+                NetHost.StringIntegrate("BtnPress," + NetHostCount + "," + SelectX + "," + SelectY + ";");
             }
             if (SceneControl.GameNet == 2)
             {
                 NetClientCount++;
-                NetClient.SocketSend("BtnPress," + NetClientCount + "," + SelectX + "," + SelectY);
+                NetClient.StringIntegrate("BtnPress," + NetClientCount + "," + SelectX + "," + SelectY + ";");
             }
         }
         if ((Input.GetButtonUp("Jump")||Input.GetKeyUp("h")) && KeyDownLeft && !KeyDownRight && stagephase == 1 && FramePos == 0 && NetAvlb)
@@ -1325,12 +1329,12 @@ public class Stage : MonoBehaviour
             if (SceneControl.GameNet == 1)
             {
                 NetHostCount++;
-                NetHost.SocketSend("BtnPress," + NetHostCount + "," + SelectX + "," + SelectY);
+                NetHost.StringIntegrate("BtnPress," + NetHostCount + "," + SelectX + "," + SelectY + ";");
             }
             if (SceneControl.GameNet == 2)
             {
                 NetClientCount++;
-                NetClient.SocketSend("BtnPress," + NetClientCount + "," + SelectX + "," + SelectY);
+                NetClient.StringIntegrate("BtnPress," + NetClientCount + "," + SelectX + "," + SelectY + ";");
             }
         }
         if (Input.GetMouseButtonUp(0) && MouseDownLeft && !MouseDownRight && MouseDownOnBtn && stagephase == 0 && HoverX != -1 && HoverY != -1 && NetAvlb)
@@ -1355,7 +1359,7 @@ public class Stage : MonoBehaviour
                         strtmp = strtmp + "," + sgmine[i-1,j-1];
                     }
                 }
-                NetHost.SocketSend(strtmp);
+                NetHost.StringIntegrate(strtmp + ";");
             }
         }
         if ((Input.GetButtonUp("Jump")||Input.GetKeyUp("h")) && KeyDownLeft && !KeyDownRight && stagephase == 0 && FramePos == 0 && NetAvlb)
@@ -1378,7 +1382,7 @@ public class Stage : MonoBehaviour
                         strtmp = strtmp + "," + sgmine[i-1,j-1];
                     }
                 }
-                NetHost.SocketSend(strtmp);
+                NetHost.StringIntegrate(strtmp + ";");
             }
         }
 
@@ -1393,12 +1397,12 @@ public class Stage : MonoBehaviour
             if (SceneControl.GameNet == 1)
             {
                 NetHostCount++;
-                NetHost.SocketSend("BtnPredict," + NetHostCount + "," + HoverX + "," + HoverY + ",0");
+                NetHost.StringIntegrate("BtnPredict," + NetHostCount + "," + HoverX + "," + HoverY + ",0" + ";");
             }
             if (SceneControl.GameNet == 2)
             {
                 NetClientCount++;
-                NetClient.SocketSend("BtnPredict," + NetClientCount + "," + HoverX + "," + HoverY + ",0");
+                NetClient.StringIntegrate("BtnPredict," + NetClientCount + "," + HoverX + "," + HoverY + ",0" + ";");
             }
         }
         if ((Input.GetButtonUp("Fire1")||Input.GetKeyUp("j")) && !KeyDownLeft && KeyDownRight && stagephase == 1 && FramePos == 0 && NetAvlb)
@@ -1411,12 +1415,12 @@ public class Stage : MonoBehaviour
             if (SceneControl.GameNet == 1)
             {
                 NetHostCount++;
-                NetHost.SocketSend("BtnPredict," + NetHostCount + "," + HoverX + "," + HoverY + ",0");
+                NetHost.StringIntegrate("BtnPredict," + NetHostCount + "," + HoverX + "," + HoverY + ",0" + ";");
             }
             if (SceneControl.GameNet == 2)
             {
                 NetClientCount++;
-                NetClient.SocketSend("BtnPredict," + NetClientCount + "," + HoverX + "," + HoverY + ",0");
+                NetClient.StringIntegrate("BtnPredict," + NetClientCount + "," + HoverX + "," + HoverY + ",0" + ";");
             }
         }
         if (Input.GetKeyUp("n") && KeyDownMPlus && stagephase == 1 && FramePos == 0 && NetAvlb)
@@ -1429,12 +1433,12 @@ public class Stage : MonoBehaviour
             if (SceneControl.GameNet == 1)
             {
                 NetHostCount++;
-                NetHost.SocketSend("BtnPredict," + NetHostCount + "," + HoverX + "," + HoverY + ",1");
+                NetHost.StringIntegrate("BtnPredict," + NetHostCount + "," + HoverX + "," + HoverY + ",1" + ";");
             }
             if (SceneControl.GameNet == 2)
             {
                 NetClientCount++;
-                NetClient.SocketSend("BtnPredict," + NetClientCount + "," + HoverX + "," + HoverY + ",1");
+                NetClient.StringIntegrate("BtnPredict," + NetClientCount + "," + HoverX + "," + HoverY + ",1" + ";");
             }
         }
         if (Input.GetKeyUp("m") && KeyDownMMinus && stagephase == 1 && FramePos == 0 && NetAvlb)
@@ -1447,12 +1451,12 @@ public class Stage : MonoBehaviour
             if (SceneControl.GameNet == 1)
             {
                 NetHostCount++;
-                NetHost.SocketSend("BtnPredict," + NetHostCount + "," + HoverX + "," + HoverY + ",2");
+                NetHost.StringIntegrate("BtnPredict," + NetHostCount + "," + HoverX + "," + HoverY + ",2" + ";");
             }
             if (SceneControl.GameNet == 2)
             {
                 NetClientCount++;
-                NetClient.SocketSend("BtnPredict," + NetClientCount + "," + HoverX + "," + HoverY + ",2");
+                NetClient.StringIntegrate("BtnPredict," + NetClientCount + "," + HoverX + "," + HoverY + ",2" + ";");
             }
         }
         if (Input.GetKeyUp(",") && KeyDownMQues && stagephase == 1 && FramePos == 0 && NetAvlb)
@@ -1465,12 +1469,12 @@ public class Stage : MonoBehaviour
             if (SceneControl.GameNet == 1)
             {
                 NetHostCount++;
-                NetHost.SocketSend("BtnPredict," + NetHostCount + "," + HoverX + "," + HoverY + ",3");
+                NetHost.StringIntegrate("BtnPredict," + NetHostCount + "," + HoverX + "," + HoverY + ",3" + ";");
             }
             if (SceneControl.GameNet == 2)
             {
                 NetClientCount++;
-                NetClient.SocketSend("BtnPredict," + NetClientCount + "," + HoverX + "," + HoverY + ",3");
+                NetClient.StringIntegrate("BtnPredict," + NetClientCount + "," + HoverX + "," + HoverY + ",3" + ";");
             }
         }
 
@@ -1485,12 +1489,12 @@ public class Stage : MonoBehaviour
             if (SceneControl.GameNet == 1)
             {
                 NetHostCount++;
-                NetHost.SocketSend("BtnEightCheck," + NetHostCount + "," + SelectX + "," + SelectY);
+                NetHost.StringIntegrate("BtnEightCheck," + NetHostCount + "," + SelectX + "," + SelectY + ";");
             }
             if (SceneControl.GameNet == 2)
             {
                 NetClientCount++;
-                NetClient.SocketSend("BtnEightCheck," + NetClientCount + "," + SelectX + "," + SelectY);
+                NetClient.StringIntegrate("BtnEightCheck," + NetClientCount + "," + SelectX + "," + SelectY + ";");
             }
         }
         if ((Input.GetButtonUp("Jump")||Input.GetKeyUp("h")||Input.GetButtonUp("Fire1")||Input.GetKeyUp("j")) && stagephase == 1 && KeyDownLeft && KeyDownRight && FramePos == 0 && NetAvlb)
@@ -1503,12 +1507,12 @@ public class Stage : MonoBehaviour
             if (SceneControl.GameNet == 1)
             {
                 NetHostCount++;
-                NetHost.SocketSend("BtnEightCheck," + NetHostCount + "," + SelectX + "," + SelectY);
+                NetHost.StringIntegrate("BtnEightCheck," + NetHostCount + "," + SelectX + "," + SelectY + ";");
             }
             if (SceneControl.GameNet == 2)
             {
                 NetClientCount++;
-                NetClient.SocketSend("BtnEightCheck," + NetClientCount + "," + SelectX + "," + SelectY);
+                NetClient.StringIntegrate("BtnEightCheck," + NetClientCount + "," + SelectX + "," + SelectY + ";");
             }
         }
         if ((Input.GetButtonUp("Jump")||Input.GetKeyUp("h")||Input.GetButtonUp("Fire1")||Input.GetKeyUp("j")) && stagephase == 0 && KeyDownLeft && KeyDownRight && FramePos == 0)
@@ -1557,17 +1561,19 @@ public class Stage : MonoBehaviour
 
             FramePos = 1;
             FramePos2 = 2;
+            Frame2Pos = 1;
+            Frame2Pos2 = 2;
             KeyActive();
 
             if (SceneControl.GameNet == 1)
             {
                 NetHostCount = 0;
-                NetHost.SocketSend("Alarm," + NetHostCount + ",100,服務端視窗被變更大小，重新遊戲");
+                NetHost.StringIntegrate("Alarm," + NetHostCount + ",100,服務端視窗被變更大小，重新遊戲" + ";");
             }
             if (SceneControl.GameNet == 2)
             {
                 NetClientCount = 0;
-                NetClient.SocketSend("Alarm," + NetClientCount + ",101,客戶端視窗被變更大小，重新遊戲");
+                NetClient.StringIntegrate("Alarm," + NetClientCount + ",101,客戶端視窗被變更大小，重新遊戲" + ";");
             }
 
         }
