@@ -26,10 +26,15 @@ public class Stage : MonoBehaviour
     public Animator FrameAni;
     public GameObject Frame2;
     public Animator Frame2Ani;
+    public Text uiTextSlider;
+    public GameObject GameObjectSlider2;
+    public Slider Slider;
+    public Slider Slider2;
+
     public int[,] sgmine = new int[30,25]; //stage mine，1:正電地雷 -1:負電地雷
     public int[,] sgmine2 = new int[30,25]; //stage mine 2，記憶附近是否有地雷，0:沒有 1:有
     public int[,] sgnum = new int[30,25]; //stage number，9:正電地雷 -9:負電地雷 0:附近沒地雷 其他:附近有幾個地雷(正負相消)
-    public int[,] sgmap = new int[30,25]; //stage map，0:未開 1:剛踩探測是否為0 2:確認為0、其他數字或地雷
+    public int[,] sgmap = new int[30,25]; //stage map，0:未開 1:剛踩探測是否為0 2:確認為0、其他數字或地雷 -1:猜測為正電地雷 -2:猜測為負電地雷 -3:不知道是否為地雷
     public int[,] sgopnbtn = new int[30,25]; //stage open button，記憶可以開啟的複數位置，0:沒有 1:有
     public int StageNumX; //關卡創建棋盤格X格數
     public int StageNumY; //關卡創建棋盤格Y格數
@@ -38,6 +43,9 @@ public class Stage : MonoBehaviour
     public int GuessMPlus = 0; //預測正電地雷數量
     public int GuessMMinus = 0; //預測負電地雷數量
     public int stagephase = 0; //關卡階段，0:創建棋盤盤面 1:正常遊戲中 2:解除地雷成功或踩到地雷
+    float StageTime = 0f;
+    float StageTimeTmp = 0f;
+
     public int SelectX; //目前選擇棋盤格位置X
     public int SelectY; //目前選擇棋盤格位置Y
     public int ScnX; //視窗X長度記憶
@@ -60,6 +68,7 @@ public class Stage : MonoBehaviour
     bool ContinueZero = false; //拓展周圍地雷總和值為0的棋盤
     int WrongAns = 0; //錯誤答案處數計數器
     bool ControllerEnable = true; //右上方可否看到輸入欄等UI控制元件
+
     float KeyUpTm = 0f; //鍵盤上鍵按壓時間
     float KeyDownTm = 0f; //鍵盤下鍵按壓時間
     float KeyLeftTm = 0f; //鍵盤左鍵按壓時間
@@ -73,6 +82,7 @@ public class Stage : MonoBehaviour
     bool KeyLeftFg = false; //鍵盤左鍵按壓flag
     bool KeyRightFg = false; //鍵盤右鍵按壓flag
     bool KeyTabFg = false; //鍵盤Tab鍵按壓flag
+
     public int FramePos = 1; //Frame的位置，0:棋盤格位置 1:右上設置 2:右下設置
     public int FramePos2 = 2; //Frame的右上位置，0:X格數 1:Y格數 2:創建關卡 3:正電地雷 4:負電地雷
     public int FramePosX = -1; //Frame在棋盤格中的X位置
@@ -85,28 +95,40 @@ public class Stage : MonoBehaviour
     public int NetHostGetCount = 0; //服務端計數量(從對方網路取得)
     public int NetClientCount = 0; //客戶端計數量
     public int NetClientGetCount = 0; //客戶端計數量(從對方網路取得)
-    bool NetAvlb = true; //一次傳輸一個網路指令，同時多個輸入是不許可的
+
+    float SliderFloat = 0f; //玩家1的完成進度或是生命值
+    float SliderFloatPre = 0f; //玩家1的完成進度或是生命值
+    float Slider2Float = 0f; //玩家2的完成進度或是生命值
+
+    //--------------------------------------------------------------------------------------------------------
 
     void Start()
     {
         uiText.text = "視窗大小:\nWidth=" + Screen.width + ", Height=" + Screen.height + "\n" + uiText.text;
 
-        if (SceneControl.GameMode == 0)
+        switch (SceneControl.GameMode)
         {
-            uiText.text = "您正在遊玩<color=magenta>單人模式</color>\n" + uiText.text;
-            Frame2.SetActive(false);
-        }
-        else if (SceneControl.GameMode == 1)
-        {
-            uiText.text = "您正在遊玩<color=magenta>合作模式</color>\n" + uiText.text;
-        }
-        else if (SceneControl.GameMode == 2)
-        {
-            uiText.text = "您正在遊玩<color=magenta>速度對戰</color>\n" + uiText.text;
-        }
-        else if (SceneControl.GameMode == 3)
-        {
-            uiText.text = "您正在遊玩<color=magenta>對弈模式</color>\n" + uiText.text;
+            case 0:
+                uiText.text = "您正在遊玩<color=magenta>單人模式</color>\n" + uiText.text;
+                Frame2.SetActive(false);
+                GameObjectSlider2.SetActive(false);
+                uiTextSlider.text = SceneControl.GameName+"\n";
+                break;
+            case 1:
+                uiText.text = "您正在遊玩<color=magenta>合作模式</color>\n" + uiText.text;
+                GameObjectSlider2.SetActive(false);
+                uiTextSlider.text = SceneControl.GameName+"\n";
+                break;
+            case 2:
+                uiText.text = "您正在遊玩<color=magenta>競速模式</color>\n" + uiText.text;
+                Frame2.SetActive(false);
+                break;
+            case 3:
+                uiText.text = "您正在遊玩<color=magenta>對弈模式</color>\n" + uiText.text;
+                GameObjectSlider2.SetActive(false);
+                break;
+            default:
+                break;
         }
 
         if (SceneControl.GameNet == 2)
@@ -122,10 +144,13 @@ public class Stage : MonoBehaviour
         uiTextMine.text = "<color=red>正電地雷</color>: 設置"+"？"+" 預測"+"？"+"\n<color=cyan>負電地雷</color>: 設置"+"？"+" 預測"+"？";
         Frame.transform.position = BtnCrtStage.transform.position;
         FrameAni.Play("FrameL");
-        Frame2Ani.Play("Frame2L");
+        if (SceneControl.GameMode != 0 && SceneControl.GameMode != 2)
+            Frame2Ani.Play("Frame2L");
         EventSystem.current.SetSelectedGameObject(BtnCrtStage, null);
 
     }
+
+    //--------------------------------------------------------------------------------------------------------
 
     public void SetController(bool flag)
     {
@@ -136,6 +161,8 @@ public class Stage : MonoBehaviour
         GameObjectMineMinus.SetActive(flag);
         ControllerEnable = flag;
     }
+
+    //--------------------------------------------------------------------------------------------------------
 
     //移除所有已創建的Btn
     public void DestroyBtn()
@@ -154,6 +181,8 @@ public class Stage : MonoBehaviour
         }
     }
 
+    //--------------------------------------------------------------------------------------------------------
+
     public void CrtBtn()
     {
         //回歸關卡階段到0，其餘回歸預設值
@@ -163,6 +192,23 @@ public class Stage : MonoBehaviour
         GuessMMinus = 0;
         SetController(true);
         uiText.text = "<color=magenta>創建關卡</color>\n視窗大小:\nWidth=" + Screen.width + ", Height=" + Screen.height + "\n" + uiText.text;
+        SliderFloat = 0f;
+        Slider.value = 0f;
+        Slider2Float = 0f;
+        Slider2.value = 0f;
+        switch (SceneControl.GameMode)
+        {
+            case 0:
+            case 1:
+            case 3:
+                uiTextSlider.text = SceneControl.GameName + "\n";
+                break;
+            case 2:
+                uiTextSlider.text = SceneControl.GameName + "\n" + SceneControl.GameName2;
+                break;
+            default:
+                break;
+        }
 
         //移除所有已創建的Btn
         DestroyBtn();
@@ -227,11 +273,13 @@ public class Stage : MonoBehaviour
         Frame2Pos = 1;
         Frame2Pos2 = 2;
         Frame2.transform.position = BtnCrtStage.transform.position;
-        Frame2Ani.Play("Frame2L");
+        if (SceneControl.GameMode != 0 && SceneControl.GameMode != 2)
+            Frame2Ani.Play("Frame2L");
         EventSystem.current.SetSelectedGameObject(BtnCrtStage, null);
         uiTextMine.text = "<color=red>正電地雷</color>: 設置"+"？"+" 預測"+"？"+"\n<color=cyan>負電地雷</color>: 設置"+"？"+" 預測"+"？";
     }
 
+    //--------------------------------------------------------------------------------------------------------
 
     public void CrtBtnLp(int i, int j)
     {
@@ -241,6 +289,8 @@ public class Stage : MonoBehaviour
         Clone.GetComponent<Image>().color = Color.white;
         Clone.name = "Btn" + i + "-" + j;
     }
+
+    //--------------------------------------------------------------------------------------------------------
 
     public void BtnPress(int X, int Y)
     {
@@ -374,11 +424,40 @@ public class Stage : MonoBehaviour
                 FrameAni.Play("FrameL");
                 Frame2Pos = 1;
                 Frame2Pos2 = 2;
-                Frame2Ani.Play("Frame2L");
+                if (SceneControl.GameMode != 0 && SceneControl.GameMode != 2)
+                    Frame2Ani.Play("Frame2L");
                 KeyActive();
+                switch (SceneControl.GameMode)
+                {
+                    case 0:
+                    case 1:
+                    case 3:
+                        uiTextSlider.text = SceneControl.GameName + "\n";
+                        break;
+                    case 2:
+                        uiTextSlider.text = SceneControl.GameName + "\n" + SceneControl.GameName2;
+                        break;
+                    default:
+                        break;
+                }
+
+                if (SceneControl.GameNet == 1 && SceneControl.GameMode == 2)
+                {
+                    uiText.text = "<color=white>" + SceneControl.GameName + "自爆，因此是" + SceneControl.GameName2 + "的勝利！</color>\n" + uiText.text;
+                    NetHostCount++;
+                    NetHost.StringIntegrate("SpdModeWin2," + NetHostCount + ";");
+                }
+                if (SceneControl.GameNet == 2 && SceneControl.GameMode == 2)
+                {
+                    uiText.text = "<color=white>" + SceneControl.GameName + "自爆，因此是" + SceneControl.GameName2 + "的勝利！</color>\n" + uiText.text;
+                    NetClientCount++;
+                    NetClient.StringIntegrate("SpdModeWin2," + NetClientCount + ";");
+                }
             }
         }
     }
+
+    //--------------------------------------------------------------------------------------------------------
 
     public void BtnPredict(int X, int Y, int Mode)
     {
@@ -425,6 +504,8 @@ public class Stage : MonoBehaviour
         GuessMineNum();
     }
 
+    //--------------------------------------------------------------------------------------------------------
+
     //計算猜測的地雷數量
     public void GuessMineNum()
     {
@@ -440,6 +521,8 @@ public class Stage : MonoBehaviour
         }
         uiTextMine.text = "<color=red>正電地雷</color>: 設置"+StageNumMPlus+" 預測"+GuessMPlus+"\n<color=cyan>負電地雷</color>: 設置"+StageNumMMinus+" 預測"+GuessMMinus;
     }
+
+    //--------------------------------------------------------------------------------------------------------
 
     public void BtnEightCheck(int X, int Y)
     {
@@ -476,15 +559,16 @@ public class Stage : MonoBehaviour
         }
     }
 
+    //--------------------------------------------------------------------------------------------------------
+
     //進入答案確認模式
     public void CheckBtnAnswer()
     {
-
         if (StageNumMPlus != GuessMPlus || StageNumMMinus != GuessMMinus)
         {
             uiText.text = "<color=magenta>預測地雷數目有誤，請重新檢查！</color>\n" + uiText.text;
         }
-        else
+        else if (SceneControl.GameMode <= 1)
         {
             RevealMine();
             if (WrongAns > 0)
@@ -493,6 +577,9 @@ public class Stage : MonoBehaviour
             }
             else
             {
+                SliderFloat = 1.0f;
+                Slider.value = 1.0f;
+                uiTextSlider.text = SceneControl.GameName+"\n";
                 uiText.text = "<color=white>恭喜！您成功解除地雷了！</color>\n" + uiText.text;
             }
             SetController(true);
@@ -502,10 +589,63 @@ public class Stage : MonoBehaviour
             FrameAni.Play("FrameL");
             Frame2Pos = 1;
             Frame2Pos2 = 2;
-            Frame2Ani.Play("Frame2L");
+            if (SceneControl.GameMode != 0 && SceneControl.GameMode != 2)
+                Frame2Ani.Play("Frame2L");
+            KeyActive();
+        }
+        else if (SceneControl.GameMode == 2)
+        {
+            RevealMine();
+            if (WrongAns > 0)
+            {
+                uiTextSlider.text = SceneControl.GameName+"\n"+SceneControl.GameName2;
+                uiText.text = "<color=magenta>糟了，" + SceneControl.GameName + "解答失敗！錯誤" + WrongAns + "處</color>\n" + uiText.text;
+                uiText.text = "<color=white>" + SceneControl.GameName + "自爆，因此是" + SceneControl.GameName2 + "的勝利！</color>\n" + uiText.text;
+
+                if (SceneControl.GameNet == 1)
+                {
+                    NetHostCount++;
+                    NetHost.StringIntegrate("SpdModeWin," + NetHostCount + "," + WrongAns + ";");
+                }
+                if (SceneControl.GameNet == 2)
+                {
+                    NetClientCount++;
+                    NetClient.StringIntegrate("SpdModeWin," + NetClientCount + "," + WrongAns + ";");
+                }
+            }
+            else
+            {
+                SliderFloat = 1.0f;
+                Slider.value = 1.0f;
+                uiTextSlider.text = SceneControl.GameName+"\n"+SceneControl.GameName2;
+                uiText.text = "<color=white>恭喜！" + SceneControl.GameName + "成功解除地雷了！</color>\n" + uiText.text;
+                uiText.text = "<color=white>此局由" + SceneControl.GameName + "獲得勝利！</color>\n" + uiText.text;
+
+                if (SceneControl.GameNet == 1)
+                {
+                    NetHostCount++;
+                    NetHost.StringIntegrate("SpdModeLose," + NetHostCount + ";");
+                }
+                if (SceneControl.GameNet == 2)
+                {
+                    NetClientCount++;
+                    NetClient.StringIntegrate("SpdModeLose," + NetClientCount + ";");
+                }
+            }
+            SetController(true);
+            stagephase = 2;
+            FramePos = 1;
+            FramePos2 = 2;
+            FrameAni.Play("FrameL");
+            Frame2Pos = 1;
+            Frame2Pos2 = 2;
+            if (SceneControl.GameMode != 0 && SceneControl.GameMode != 2)
+                Frame2Ani.Play("Frame2L");
             KeyActive();
         }
     }
+
+    //--------------------------------------------------------------------------------------------------------
 
     //填入地雷
     public void AddMine(int MineType, int SelectX, int SelectY)
@@ -528,6 +668,8 @@ public class Stage : MonoBehaviour
 
     }
 
+    //--------------------------------------------------------------------------------------------------------
+
     //顯示地雷
     public void RevealMine()
     {
@@ -541,6 +683,8 @@ public class Stage : MonoBehaviour
             }
         }
     }
+
+    //--------------------------------------------------------------------------------------------------------
 
     public void CheckBtnStatus(int i, int j)
     {
@@ -592,6 +736,8 @@ public class Stage : MonoBehaviour
         }
     }
 
+    //--------------------------------------------------------------------------------------------------------
+
     public void CheckUDLRBtn(int CheckX, int CheckY, bool CheckEightBtn)
     {
         int[,] EightCheck = new int[8, 3] {{1,0,1},{1,-1,1},{0,-1,1},{-1,-1,1},{-1,0,1},{-1,1,1},{0,1,1},{1,1,1}};
@@ -620,12 +766,41 @@ public class Stage : MonoBehaviour
                     FrameAni.Play("FrameL");
                     Frame2Pos = 1;
                     Frame2Pos2 = 2;
-                    Frame2Ani.Play("Frame2L");
+                    if (SceneControl.GameMode != 0 && SceneControl.GameMode != 2)
+                        Frame2Ani.Play("Frame2L");
                     KeyActive();
+                    switch (SceneControl.GameMode)
+                    {
+                        case 0:
+                        case 1:
+                        case 3:
+                            uiTextSlider.text = SceneControl.GameName + "\n";
+                            break;
+                        case 2:
+                            uiTextSlider.text = SceneControl.GameName + "\n" + SceneControl.GameName2;
+                            break;
+                        default:
+                            break;
+                    }
+
+                    if (SceneControl.GameNet == 1 && SceneControl.GameMode == 2)
+                    {
+                        uiText.text = "<color=white>" + SceneControl.GameName + "自爆，因此是" + SceneControl.GameName2 + "的勝利！</color>\n" + uiText.text;
+                        NetHostCount++;
+                        NetHost.StringIntegrate("SpdModeWin2," + NetHostCount + ";");
+                    }
+                    if (SceneControl.GameNet == 2 && SceneControl.GameMode == 2)
+                    {
+                        uiText.text = "<color=white>" + SceneControl.GameName + "自爆，因此是" + SceneControl.GameName2 + "的勝利！</color>\n" + uiText.text;
+                        NetClientCount++;
+                        NetClient.StringIntegrate("SpdModeWin2," + NetClientCount + ";");
+                    }
                 }
             }
         }
     }
+
+    //--------------------------------------------------------------------------------------------------------
 
     public void DetectInput()
     {
@@ -670,6 +845,8 @@ public class Stage : MonoBehaviour
         }
         InputFieldMineMinus.text = IFMMtotalnum.ToString();
     }
+
+    //--------------------------------------------------------------------------------------------------------
 
     public void KeyActive()
     {
@@ -724,48 +901,102 @@ public class Stage : MonoBehaviour
             DetectInput();
         }
 
-        if (Frame2Pos == 0 && Frame2PosX != -1 && Frame2PosX != -1)
+        if (Frame2Pos == 0 && Frame2PosX != -1 && Frame2PosX != -1 && SceneControl.GameMode != 0 && SceneControl.GameMode != 2)
         {
             GameObject BtnFocus = GameObject.Find("Btn" + (Frame2PosX+1) + "-" + (Frame2PosY+1));
             Frame2.transform.position = BtnFocus.transform.position;
             Frame2Ani.Play("Frame2S");
         }
-        if (Frame2Pos2 == 0 && Frame2Pos == 1)
+        if (Frame2Pos2 == 0 && Frame2Pos == 1 && SceneControl.GameMode != 0 && SceneControl.GameMode != 2)
         {
             Frame2.transform.position = InputFieldX.transform.position;
             Frame2Ani.Play("Frame2M");
         }
-        if (Frame2Pos2 == 1 && Frame2Pos == 1)
+        if (Frame2Pos2 == 1 && Frame2Pos == 1 && SceneControl.GameMode != 0 && SceneControl.GameMode != 2)
         {
             Frame2.transform.position = InputFieldY.transform.position;
             Frame2Ani.Play("Frame2M");
         }
-        if (Frame2Pos2 == 2 && Frame2Pos == 1)
+        if (Frame2Pos2 == 2 && Frame2Pos == 1 && SceneControl.GameMode != 0 && SceneControl.GameMode != 2)
         {
             Frame2.transform.position = BtnCrtStage.transform.position;
             Frame2Ani.Play("Frame2L");
         }
-        if (Frame2Pos2 == 3 && Frame2Pos == 1)
+        if (Frame2Pos2 == 3 && Frame2Pos == 1 && SceneControl.GameMode != 0 && SceneControl.GameMode != 2)
         {
             Frame2.transform.position = InputFieldMinePlus.transform.position;
             Frame2Ani.Play("Frame2M");
         }
-        if (Frame2Pos2 == 4 && Frame2Pos == 1)
+        if (Frame2Pos2 == 4 && Frame2Pos == 1 && SceneControl.GameMode != 0 && SceneControl.GameMode != 2)
         {
             Frame2.transform.position = InputFieldMineMinus.transform.position;
             Frame2Ani.Play("Frame2M");
         }
-        if (Frame2Pos == 2)
+        if (Frame2Pos == 2 && SceneControl.GameMode != 0 && SceneControl.GameMode != 2)
         {
             Frame2.transform.position = BtnCheckAns.transform.position;
             Frame2Ani.Play("Frame2L");
         }
     }
 
+    //--------------------------------------------------------------------------------------------------------
+
+    void SliderCal()
+    {
+        int BtnExpand = 0;
+        for (int i = 0; i < StageNumX; i++)
+        {
+            for (int j = 0; j < StageNumY; j++)
+            {
+                if (sgmap[i,j] == 1 || sgmap[i,j] == 2 || sgmap[i,j] == -1 || sgmap[i,j] == -2)
+                    BtnExpand++;
+            }
+        }
+        SliderFloat = Mathf.Pow((BtnExpand / (StageNumX * StageNumY * 1.0f)),3);
+        Slider.value = SliderFloat;
+
+        switch (SceneControl.GameMode)
+        {
+            case 0:
+            case 1:
+            case 3:
+                uiTextSlider.text = SceneControl.GameName + " - " + Mathf.Round(SliderFloat*10000)*0.01 + "%\n";
+                break;
+            case 2:
+                uiTextSlider.text = SceneControl.GameName + " - " + Mathf.Round(SliderFloat*10000)*0.01 + "%\n" + SceneControl.GameName2 + " - " + Mathf.Round(Slider2Float*10000)*0.01 + "%\n";
+                Slider2.value = Slider2Float;
+                break;
+            default:
+                break;
+        }
+    }
+
+    //--------------------------------------------------------------------------------------------------------
+
     //遊戲中每幀更新內容
     void Update()
     {
+        //踩地雷遊戲完成進度條
+        StageTime += Time.deltaTime;
+        if (StageTime > StageTimeTmp + 0.05f && stagephase == 1)
+        {
+            SliderCal();
+            if (SceneControl.GameNet == 1 && SceneControl.GameMode == 2 && SliderFloat != SliderFloatPre)
+            {
+                SliderFloatPre = SliderFloat;
+                NetHostCount++;
+                NetHost.StringIntegrate("SliderVal," + NetHostCount + "," + SliderFloat + ";");
+            }
+            if (SceneControl.GameNet == 2 && SceneControl.GameMode == 2 && SliderFloat != SliderFloatPre)
+            {
+                SliderFloatPre = SliderFloat;
+                NetClientCount++;
+                NetClient.StringIntegrate("SliderVal," + NetClientCount + "," + SliderFloat + ";");
+            }
+            StageTimeTmp += 0.05f;
+        }
 
+        //解析網路從對方收到的字串
         if (SceneControl.GameNet == 1 && NetHost.recvStrPcs != "")
         {
             string[] strAry = NetHost.recvStrPcs.Split(',');
@@ -815,6 +1046,68 @@ public class Stage : MonoBehaviour
                     }
                     else {uiText.text = "<color=red>CheckBtnAnswer連線出錯>___<</color>\n" + uiText.text;}
                     break;
+                case "SpdModeWin":
+                    NetClientGetCount++;
+                    if (int.Parse(strAry[1]) == NetClientGetCount)
+                    {
+                        uiTextSlider.text = SceneControl.GameName+"\n"+SceneControl.GameName2;
+                        uiText.text = "<color=magenta>糟了，" + SceneControl.GameName2 + "解答失敗！錯誤" + strAry[2] + "處</color>\n" + uiText.text;
+                        uiText.text = "<color=white>" + SceneControl.GameName2 + "自爆，因此是" + SceneControl.GameName + "的勝利！</color>\n" + uiText.text;
+                        SetController(true);
+                        stagephase = 2;
+                        FramePos = 1;
+                        FramePos2 = 2;
+                        FrameAni.Play("FrameL");
+                        Frame2Pos = 1;
+                        Frame2Pos2 = 2;
+                        Frame2Ani.Play("Frame2L");
+                        KeyActive();
+                        BtnCheckAns.GetComponent<Button>().interactable = false;
+                    }
+                    else {uiText.text = "<color=red>SpdModeWin連線出錯>___<</color>\n" + uiText.text;}
+                    break;
+                case "SpdModeWin2":
+                    NetClientGetCount++;
+                    if (int.Parse(strAry[1]) == NetClientGetCount)
+                    {
+                        uiTextSlider.text = SceneControl.GameName+"\n"+SceneControl.GameName2;
+                        uiText.text = "<color=magenta>糟了，" + SceneControl.GameName2 + "踩到地雷！</color>\n" + uiText.text;
+                        uiText.text = "<color=white>" + SceneControl.GameName2 + "自爆，因此是" + SceneControl.GameName + "的勝利！</color>\n" + uiText.text;
+                        SetController(true);
+                        stagephase = 2;
+                        FramePos = 1;
+                        FramePos2 = 2;
+                        FrameAni.Play("FrameL");
+                        Frame2Pos = 1;
+                        Frame2Pos2 = 2;
+                        Frame2Ani.Play("Frame2L");
+                        KeyActive();
+                        BtnCheckAns.GetComponent<Button>().interactable = false;
+                    }
+                    else {uiText.text = "<color=red>SpdModeWin2連線出錯>___<</color>\n" + uiText.text;}
+                    break;
+                case "SpdModeLose":
+                    NetClientGetCount++;
+                    if (int.Parse(strAry[1]) == NetClientGetCount)
+                    {
+                        Slider2Float = 1.0f;
+                        Slider2.value = 1.0f;
+                        uiTextSlider.text = SceneControl.GameName+"\n"+SceneControl.GameName2;
+                        uiText.text = "<color=magenta>糟了！" + SceneControl.GameName2 + "成功解除地雷了！</color>\n" + uiText.text;
+                        uiText.text = "<color=white>此局由" + SceneControl.GameName2 + "獲得勝利！</color>\n" + uiText.text;
+                        SetController(true);
+                        stagephase = 2;
+                        FramePos = 1;
+                        FramePos2 = 2;
+                        FrameAni.Play("FrameL");
+                        Frame2Pos = 1;
+                        Frame2Pos2 = 2;
+                        Frame2Ani.Play("Frame2L");
+                        KeyActive();
+                        BtnCheckAns.GetComponent<Button>().interactable = false;
+                    }
+                    else {uiText.text = "<color=red>SpdModeLose連線出錯>___<</color>\n" + uiText.text;}
+                    break;
                 case "FrameChgPos":
                     NetClientGetCount++;
                     if (int.Parse(strAry[1]) == NetClientGetCount)
@@ -826,6 +1119,21 @@ public class Stage : MonoBehaviour
                         KeyActive();
                     }
                     else {uiText.text = "<color=red>FrameChgPos連線出錯>___<</color>\n" + uiText.text;}
+                    break;
+                case "SliderVal":
+                    NetClientGetCount++;
+                    if (int.Parse(strAry[1]) == NetClientGetCount)
+                    {
+                        Slider2Float = float.Parse(strAry[2]);
+                    }
+                    else {uiText.text = "<color=red>SliderVal連線出錯>___<</color>\n" + uiText.text;}
+                    break;
+                case "PlayerName":
+                    SceneControl.GameName2 = strAry[1];
+                    if (SceneControl.GameMode == 2)
+                        uiTextSlider.text = SceneControl.GameName+"\n"+SceneControl.GameName2;
+                    else
+                        uiTextSlider.text = SceneControl.GameName+"\n";
                     break;
                 case "Alarm":
                     switch (strAry[2])
@@ -849,7 +1157,7 @@ public class Stage : MonoBehaviour
                     uiText.text = "<color=red>不明的指令@___@</color> " + "\n" + uiText.text;
                     break;
             }
-            // uiText.text = "recvStrPcs= " + NetHost.recvStrPcs + "\n" + uiText.text;
+            uiText.text = "" + NetHost.recvStrPcs + "\n" + uiText.text;
             NetHost.recvStrPcs = "";
         }
 
@@ -868,6 +1176,28 @@ public class Stage : MonoBehaviour
                         InputFieldY.text = strAry[3];
                         StageNumY = int.Parse(strAry[3]);
                         uiText.text = "<color=magenta>服務端已決定棋盤大小...</color>\n" + uiText.text;
+                        stagephase = 0;
+                        WrongAns = 0;
+                        GuessMPlus = 0;
+                        GuessMMinus = 0;
+                        SetController(true);
+                        SliderFloat = 0f;
+                        Slider.value = 0f;
+                        Slider2Float = 0f;
+                        Slider2.value = 0f;
+                        switch (SceneControl.GameMode)
+                        {
+                            case 0:
+                            case 1:
+                            case 3:
+                                uiTextSlider.text = SceneControl.GameName + "\n";
+                                break;
+                            case 2:
+                                uiTextSlider.text = SceneControl.GameName + "\n" + SceneControl.GameName2;
+                                break;
+                            default:
+                                break;
+                        }
                     }
                     else {uiText.text = "<color=red>CrtBtn連線出錯>___<</color>\n" + uiText.text;}
                     break;
@@ -940,6 +1270,68 @@ public class Stage : MonoBehaviour
                     }
                     else {uiText.text = "<color=red>CheckBtnAnswer連線出錯>___<</color>\n" + uiText.text;}
                     break;
+                case "SpdModeWin":
+                    NetHostGetCount++;
+                    if (int.Parse(strAry[1]) == NetHostGetCount)
+                    {
+                        uiTextSlider.text = SceneControl.GameName+"\n"+SceneControl.GameName2;
+                        uiText.text = "<color=magenta>糟了，" + SceneControl.GameName2 + "解答失敗！錯誤" + strAry[2] + "處</color>\n" + uiText.text;
+                        uiText.text = "<color=white>" + SceneControl.GameName2 + "自爆，因此是" + SceneControl.GameName + "的勝利！</color>\n" + uiText.text;
+                        SetController(true);
+                        stagephase = 2;
+                        FramePos = 1;
+                        FramePos2 = 2;
+                        FrameAni.Play("FrameL");
+                        Frame2Pos = 1;
+                        Frame2Pos2 = 2;
+                        Frame2Ani.Play("Frame2L");
+                        KeyActive();
+                        BtnCheckAns.GetComponent<Button>().interactable = false;
+                    }
+                    else {uiText.text = "<color=red>SpdModeWin連線出錯>___<</color>\n" + uiText.text;}
+                    break;
+                case "SpdModeWin2":
+                    NetHostGetCount++;
+                    if (int.Parse(strAry[1]) == NetHostGetCount)
+                    {
+                        uiTextSlider.text = SceneControl.GameName+"\n"+SceneControl.GameName2;
+                        uiText.text = "<color=magenta>糟了，" + SceneControl.GameName2 + "踩到地雷！</color>\n" + uiText.text;
+                        uiText.text = "<color=white>" + SceneControl.GameName2 + "自爆，因此是" + SceneControl.GameName + "的勝利！</color>\n" + uiText.text;
+                        SetController(true);
+                        stagephase = 2;
+                        FramePos = 1;
+                        FramePos2 = 2;
+                        FrameAni.Play("FrameL");
+                        Frame2Pos = 1;
+                        Frame2Pos2 = 2;
+                        Frame2Ani.Play("Frame2L");
+                        KeyActive();
+                        BtnCheckAns.GetComponent<Button>().interactable = false;
+                    }
+                    else {uiText.text = "<color=red>SpdModeWin2連線出錯>___<</color>\n" + uiText.text;}
+                    break;
+                case "SpdModeLose":
+                    NetHostGetCount++;
+                    if (int.Parse(strAry[1]) == NetHostGetCount)
+                    {
+                        Slider2Float = 1.0f;
+                        Slider2.value = 1.0f;
+                        uiTextSlider.text = SceneControl.GameName+"\n"+SceneControl.GameName2;
+                        uiText.text = "<color=magenta>糟了！" + SceneControl.GameName2 + "成功解除地雷了！</color>\n" + uiText.text;
+                        uiText.text = "<color=white>此局由" + SceneControl.GameName2 + "獲得勝利！</color>\n" + uiText.text;
+                        SetController(true);
+                        stagephase = 2;
+                        FramePos = 1;
+                        FramePos2 = 2;
+                        FrameAni.Play("FrameL");
+                        Frame2Pos = 1;
+                        Frame2Pos2 = 2;
+                        Frame2Ani.Play("Frame2L");
+                        KeyActive();
+                        BtnCheckAns.GetComponent<Button>().interactable = false;
+                    }
+                    else {uiText.text = "<color=red>SpdModeLose連線出錯>___<</color>\n" + uiText.text;}
+                    break;
                 case "FrameChgPos":
                     NetHostGetCount++;
                     if (int.Parse(strAry[1]) == NetHostGetCount)
@@ -951,6 +1343,21 @@ public class Stage : MonoBehaviour
                         KeyActive();
                     }
                     else {uiText.text = "<color=red>FrameChgPos連線出錯>___<</color>\n" + uiText.text;}
+                    break;
+                case "SliderVal":
+                    NetHostGetCount++;
+                    if (int.Parse(strAry[1]) == NetHostGetCount)
+                    {
+                        Slider2Float = float.Parse(strAry[2]);
+                    }
+                    else {uiText.text = "<color=red>SliderVal連線出錯>___<</color>\n" + uiText.text;}
+                    break;
+                case "PlayerName":
+                    SceneControl.GameName2 = strAry[1];
+                    if (SceneControl.GameMode == 2)
+                        uiTextSlider.text = SceneControl.GameName+"\n"+SceneControl.GameName2;
+                    else
+                        uiTextSlider.text = SceneControl.GameName+"\n";
                     break;
                 case "Alarm":
                     switch (strAry[2])
@@ -974,17 +1381,14 @@ public class Stage : MonoBehaviour
                     uiText.text = "<color=red>不明的指令@___@</color> " + "\n" + uiText.text;
                     break;
             }
-            // uiText.text = "recvStrPcs= " + NetClient.recvStrPcs + "\n" + uiText.text;
+            uiText.text = "" + NetClient.recvStrPcs + "\n" + uiText.text;
             NetClient.recvStrPcs = "";
         }
 
-        NetAvlb = true;
-
         //抓取鍵盤按Space的動作
         if (Input.GetKeyDown("tab")) {KeyTabFg = true;}
-        if (Input.GetKeyUp("tab") && NetAvlb)
+        if (Input.GetKeyUp("tab"))
         {
-            NetAvlb = false;
             if (FramePos == 0 && KeyTabFg) {FramePos = 1; KeyTabFg = false;}
             if (FramePos == 1 && KeyTabFg) {FramePos = 2; KeyTabFg = false;}
             if (FramePos == 2 && KeyTabFg) {FramePos = 0; KeyTabFg = false;}
@@ -998,16 +1402,7 @@ public class Stage : MonoBehaviour
                 if (FramePos == 2 && !BtnCheckAns.GetComponent<Button>().interactable) {FramePos = 0; CheckEnable = true;}
             }
 
-            if (SceneControl.GameNet == 1 && stagephase != 0)
-            {
-                NetHostCount++;
-                NetHost.StringIntegrate("FrameChgPos," + NetHostCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY + ";");
-            }
-            if (SceneControl.GameNet == 2 && stagephase != 0)
-            {
-                NetClientCount++;
-                NetClient.StringIntegrate("FrameChgPos," + NetClientCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY + ";");
-            }
+
             KeyActive();
         }
         //抓取鍵盤上下左右的動作
@@ -1020,136 +1415,129 @@ public class Stage : MonoBehaviour
         if (Input.GetKeyUp("left") || Input.GetKeyUp("a")) {KeyLeftTm = 0f; KeyLeftTm2 = 0.15f; KeyLeftFg = false;}
         if (Input.GetKeyUp("right") || Input.GetKeyUp("d")) {KeyRightTm = 0f; KeyRightTm2 = 0.15f; KeyRightFg = false;}
         //如果上下左右被按下，則變更Frame的位置(在棋盤格時)
-        if (KeyUpTm > 0f && !KeyUpFg && FramePos == 0 && FramePosY > 0 && NetAvlb)
+        if (KeyUpTm > 0f && !KeyUpFg && FramePos == 0 && FramePosY > 0)
         {
-            NetAvlb = false;
             FramePosY--;
             KeyUpFg = true;
-            if (SceneControl.GameNet == 1 && stagephase != 0)
+            if (SceneControl.GameNet == 1 && stagephase != 0 && SceneControl.GameMode != 2)
             {
                 NetHostCount++;
                 NetHost.StringIntegrate("FrameChgPos," + NetHostCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY + ";");
             }
-            if (SceneControl.GameNet == 2 && stagephase != 0)
+            if (SceneControl.GameNet == 2 && stagephase != 0 && SceneControl.GameMode != 2)
             {
                 NetClientCount++;
                 NetClient.StringIntegrate("FrameChgPos," + NetClientCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY + ";");
             }
             KeyActive();
         }
-        if (KeyDownTm > 0f && !KeyDownFg && FramePos == 0 && FramePosY < StageNumY-1 && NetAvlb)
+        if (KeyDownTm > 0f && !KeyDownFg && FramePos == 0 && FramePosY < StageNumY-1)
         {
-            NetAvlb = false;
             FramePosY++;
             KeyDownFg = true;
-            if (SceneControl.GameNet == 1 && stagephase != 0)
+            if (SceneControl.GameNet == 1 && stagephase != 0 && SceneControl.GameMode != 2)
             {
                 NetHostCount++;
                 NetHost.StringIntegrate("FrameChgPos," + NetHostCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY + ";");
             }
-            if (SceneControl.GameNet == 2 && stagephase != 0)
+            if (SceneControl.GameNet == 2 && stagephase != 0 && SceneControl.GameMode != 2)
             {
                 NetClientCount++;
                 NetClient.StringIntegrate("FrameChgPos," + NetClientCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY + ";");
             }
             KeyActive();
         }
-        if (KeyLeftTm > 0f && !KeyLeftFg && FramePos == 0 && FramePosX > 0 && NetAvlb)
+        if (KeyLeftTm > 0f && !KeyLeftFg && FramePos == 0 && FramePosX > 0)
         {
-            NetAvlb = false;
             FramePosX--;
             KeyLeftFg = true;
-            if (SceneControl.GameNet == 1 && stagephase != 0)
+            if (SceneControl.GameNet == 1 && stagephase != 0 && SceneControl.GameMode != 2)
             {
                 NetHostCount++;
                 NetHost.StringIntegrate("FrameChgPos," + NetHostCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY + ";");
             }
-            if (SceneControl.GameNet == 2 && stagephase != 0)
+            if (SceneControl.GameNet == 2 && stagephase != 0 && SceneControl.GameMode != 2)
             {
                 NetClientCount++;
                 NetClient.StringIntegrate("FrameChgPos," + NetClientCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY + ";");
             }
             KeyActive();
         }
-        if (KeyRightTm > 0f && !KeyRightFg && FramePos == 0 && FramePosX < StageNumX-1 && NetAvlb)
+        if (KeyRightTm > 0f && !KeyRightFg && FramePos == 0 && FramePosX < StageNumX-1)
         {
-            NetAvlb = false;
+
             FramePosX++;
             KeyRightFg = true;
-            if (SceneControl.GameNet == 1 && stagephase != 0)
+            if (SceneControl.GameNet == 1 && stagephase != 0 && SceneControl.GameMode != 2)
             {
                 NetHostCount++;
                 NetHost.StringIntegrate("FrameChgPos," + NetHostCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY + ";");
             }
-            if (SceneControl.GameNet == 2 && stagephase != 0)
+            if (SceneControl.GameNet == 2 && stagephase != 0 && SceneControl.GameMode != 2)
             {
                 NetClientCount++;
                 NetClient.StringIntegrate("FrameChgPos," + NetClientCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY + ";");
             }
             KeyActive();
         }
-        if (KeyUpTm > 0.15f && KeyUpTm > KeyUpTm2+0.05f && FramePos == 0 && FramePosY > 0 && NetAvlb)
+        if (KeyUpTm > 0.15f && KeyUpTm > KeyUpTm2+0.05f && FramePos == 0 && FramePosY > 0)
         {
-            NetAvlb = false;
             FramePosY--;
             KeyUpTm2 = KeyUpTm2+0.05f;
-            if (SceneControl.GameNet == 1 && stagephase != 0)
+            if (SceneControl.GameNet == 1 && stagephase != 0 && SceneControl.GameMode != 2)
             {
                 NetHostCount++;
                 NetHost.StringIntegrate("FrameChgPos," + NetHostCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY + ";");
             }
-            if (SceneControl.GameNet == 2 && stagephase != 0)
+            if (SceneControl.GameNet == 2 && stagephase != 0 && SceneControl.GameMode != 2)
             {
                 NetClientCount++;
                 NetClient.StringIntegrate("FrameChgPos," + NetClientCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY + ";");
             }
             KeyActive();
         }
-        if (KeyDownTm > 0.15f && KeyDownTm > KeyDownTm2+0.05f && FramePos == 0 && FramePosY < StageNumY-1 && NetAvlb)
+        if (KeyDownTm > 0.15f && KeyDownTm > KeyDownTm2+0.05f && FramePos == 0 && FramePosY < StageNumY-1)
         {
-            NetAvlb = false;
             FramePosY++;
             KeyDownTm2 = KeyDownTm2+0.05f;
-            if (SceneControl.GameNet == 1 && stagephase != 0)
+            if (SceneControl.GameNet == 1 && stagephase != 0 && SceneControl.GameMode != 2)
             {
                 NetHostCount++;
                 NetHost.StringIntegrate("FrameChgPos," + NetHostCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY + ";");
             }
-            if (SceneControl.GameNet == 2 && stagephase != 0)
+            if (SceneControl.GameNet == 2 && stagephase != 0 && SceneControl.GameMode != 2)
             {
                 NetClientCount++;
                 NetClient.StringIntegrate("FrameChgPos," + NetClientCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY + ";");
             }
             KeyActive();
         }
-        if (KeyLeftTm > 0.15f && KeyLeftTm > KeyLeftTm2+0.05f && FramePos == 0 && FramePosX > 0 && NetAvlb)
+        if (KeyLeftTm > 0.15f && KeyLeftTm > KeyLeftTm2+0.05f && FramePos == 0 && FramePosX > 0)
         {
-            NetAvlb = false;
             FramePosX--;
             KeyLeftTm2 = KeyLeftTm2+0.05f;
-            if (SceneControl.GameNet == 1 && stagephase != 0)
+            if (SceneControl.GameNet == 1 && stagephase != 0 && SceneControl.GameMode != 2)
             {
                 NetHostCount++;
                 NetHost.StringIntegrate("FrameChgPos," + NetHostCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY + ";");
             }
-            if (SceneControl.GameNet == 2 && stagephase != 0)
+            if (SceneControl.GameNet == 2 && stagephase != 0 && SceneControl.GameMode != 2)
             {
                 NetClientCount++;
                 NetClient.StringIntegrate("FrameChgPos," + NetClientCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY + ";");
             }
             KeyActive();
         }
-        if (KeyRightTm > 0.15f && KeyRightTm > KeyRightTm2+0.05f && FramePos == 0 && FramePosX < StageNumX-1 && NetAvlb)
+        if (KeyRightTm > 0.15f && KeyRightTm > KeyRightTm2+0.05f && FramePos == 0 && FramePosX < StageNumX-1)
         {
-            NetAvlb = false;
             FramePosX++;
             KeyRightTm2 = KeyRightTm2+0.05f;
-            if (SceneControl.GameNet == 1 && stagephase != 0)
+            if (SceneControl.GameNet == 1 && stagephase != 0 && SceneControl.GameMode != 2)
             {
                 NetHostCount++;
                 NetHost.StringIntegrate("FrameChgPos," + NetHostCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY + ";");
             }
-            if (SceneControl.GameNet == 2 && stagephase != 0)
+            if (SceneControl.GameNet == 2 && stagephase != 0 && SceneControl.GameMode != 2)
             {
                 NetClientCount++;
                 NetClient.StringIntegrate("FrameChgPos," + NetClientCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY + ";");
@@ -1157,68 +1545,64 @@ public class Stage : MonoBehaviour
             KeyActive();
         }
         //如果上下左右被按下，則變更Frame的位置(在右上角輸入欄時)
-        if (KeyUpTm > 0f && !KeyUpFg && FramePos == 1 && NetAvlb)
+        if (KeyUpTm > 0f && !KeyUpFg && FramePos == 1)
         {
-            NetAvlb = false;
             FramePos2--;
             KeyUpFg = true;
-            if (SceneControl.GameNet == 1)
+            if (SceneControl.GameNet == 1 && SceneControl.GameMode != 2)
             {
                 NetHostCount++;
                 NetHost.StringIntegrate("FrameChgPos," + NetHostCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY + ";");
             }
-            if (SceneControl.GameNet == 2)
+            if (SceneControl.GameNet == 2 && SceneControl.GameMode != 2)
             {
                 NetClientCount++;
                 NetClient.StringIntegrate("FrameChgPos," + NetClientCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY + ";");
             }
             KeyActive();
         }
-        if (KeyDownTm > 0f && !KeyDownFg && FramePos == 1 && NetAvlb)
+        if (KeyDownTm > 0f && !KeyDownFg && FramePos == 1)
         {
-            NetAvlb = false;
             FramePos2++;
             KeyDownFg = true;
-            if (SceneControl.GameNet == 1)
+            if (SceneControl.GameNet == 1 && SceneControl.GameMode != 2)
             {
                 NetHostCount++;
                 NetHost.StringIntegrate("FrameChgPos," + NetHostCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY + ";");
             }
-            if (SceneControl.GameNet == 2)
+            if (SceneControl.GameNet == 2 && SceneControl.GameMode != 2)
             {
                 NetClientCount++;
                 NetClient.StringIntegrate("FrameChgPos," + NetClientCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY + ";");
             }
             KeyActive();
         }
-        if (KeyLeftTm > 0f && !KeyLeftFg && FramePos == 1 && NetAvlb)
+        if (KeyLeftTm > 0f && !KeyLeftFg && FramePos == 1)
         {
-            NetAvlb = false;
             FramePos2--;
             KeyLeftFg = true;
-            if (SceneControl.GameNet == 1)
+            if (SceneControl.GameNet == 1 && SceneControl.GameMode != 2)
             {
                 NetHostCount++;
                 NetHost.StringIntegrate("FrameChgPos," + NetHostCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY + ";");
             }
-            if (SceneControl.GameNet == 2)
+            if (SceneControl.GameNet == 2 && SceneControl.GameMode != 2)
             {
                 NetClientCount++;
                 NetClient.StringIntegrate("FrameChgPos," + NetClientCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY + ";");
             }
             KeyActive();
         }
-        if (KeyRightTm > 0f && !KeyRightFg && FramePos == 1 && NetAvlb)
+        if (KeyRightTm > 0f && !KeyRightFg && FramePos == 1)
         {
-            NetAvlb = false;
             FramePos2++;
             KeyRightFg = true;
-            if (SceneControl.GameNet == 1)
+            if (SceneControl.GameNet == 1 && SceneControl.GameMode != 2)
             {
                 NetHostCount++;
                 NetHost.StringIntegrate("FrameChgPos," + NetHostCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY + ";");
             }
-            if (SceneControl.GameNet == 2)
+            if (SceneControl.GameNet == 2 && SceneControl.GameMode != 2)
             {
                 NetClientCount++;
                 NetClient.StringIntegrate("FrameChgPos," + NetClientCount + "," + FramePos + "," + FramePos2 + "," + FramePosX + "," + FramePosY + ";");
@@ -1235,16 +1619,15 @@ public class Stage : MonoBehaviour
         //偵測滑鼠左右鍵/鍵盤Space&Ctrl是否被按下
         if (Input.GetMouseButtonDown(0)) {MouseDownLeft = true;}
         if (Input.GetMouseButtonDown(1)) {MouseDownRight = true;}
-        if (Input.GetButtonDown("Jump")||Input.GetKeyDown("h")) {KeyDownLeft = true;}
+        if (Input.GetButtonDown("Jump")||Input.GetKeyDown("h")||Input.GetKeyDown("enter")) {KeyDownLeft = true;}
         if (Input.GetButtonDown("Fire1")||Input.GetKeyDown("j")) {KeyDownRight = true;}
         if (Input.GetKeyDown("n")) {KeyDownMPlus = true;}
         if (Input.GetKeyDown("m")) {KeyDownMMinus = true;}
         if (Input.GetKeyDown(",")) {KeyDownMQues = true;}
 
         //滑鼠左鍵按下彈起在創建關卡按鈕上，則創建關卡
-        if (Input.GetMouseButtonUp(0) && MouseDownLeft && HoverCrtStage && MouseDownOnBtnCrtStage && SceneControl.GameNet != 2 && NetAvlb)
+        if (Input.GetMouseButtonUp(0) && MouseDownLeft && HoverCrtStage && MouseDownOnBtnCrtStage && SceneControl.GameNet != 2)
         {
-            NetAvlb = false;
             KeyActive();
             CrtBtn();
 
@@ -1254,9 +1637,8 @@ public class Stage : MonoBehaviour
                 NetHost.StringIntegrate("CrtBtn," + NetHostCount + "," + StageNumX + "," + StageNumY + ";");
             }
         }
-        if ((Input.GetButtonUp("Jump")||Input.GetKeyUp("h")) && FramePos == 1 && FramePos2 == 2 && SceneControl.GameNet != 2 && NetAvlb)
+        if ((Input.GetButtonUp("Jump")||Input.GetKeyUp("h")||Input.GetKeyUp("enter")) && FramePos == 1 && FramePos2 == 2 && SceneControl.GameNet != 2)
         {
-            NetAvlb = false;
             CrtBtn();
 
             if (SceneControl.GameNet == 1)
@@ -1267,32 +1649,33 @@ public class Stage : MonoBehaviour
         }
 
         //滑鼠左鍵按下彈起在檢查答案按鈕上，則檢查答案
-        if (Input.GetMouseButtonUp(0) && MouseDownLeft && HoverCheckAns && MouseDownOnBtnCheckAns && stagephase == 1 && NetAvlb)
+        if (Input.GetMouseButtonUp(0) && MouseDownLeft && HoverCheckAns && MouseDownOnBtnCheckAns && stagephase == 1)
         {
-            NetAvlb = false;
-            CheckBtnAnswer();
+            if (SceneControl.GameMode <= 2)
+                CheckBtnAnswer();
 
-            if (SceneControl.GameNet == 1)
+            if (SceneControl.GameNet == 1 && SceneControl.GameMode <= 1)
             {
                 NetHostCount++;
                 NetHost.StringIntegrate("CheckBtnAnswer," + NetHostCount + ";");
             }
-            if (SceneControl.GameNet == 2)
+            if (SceneControl.GameNet == 2 && SceneControl.GameMode <= 1)
             {
                 NetClientCount++;
                 NetClient.StringIntegrate("CheckBtnAnswer," + NetClientCount + ";");
             }
         }
-        if ((Input.GetButtonUp("Jump")||Input.GetKeyUp("h")) && FramePos == 2 && stagephase == 1 && NetAvlb)
+        if ((Input.GetButtonUp("Jump")||Input.GetKeyUp("h")||Input.GetKeyUp("enter")) && FramePos == 2 && stagephase == 1)
         {
-            NetAvlb = false;
-            CheckBtnAnswer();
-            if (SceneControl.GameNet == 1)
+            if (SceneControl.GameMode <= 2)
+                CheckBtnAnswer();
+
+            if (SceneControl.GameNet == 1 && SceneControl.GameMode <= 1)
             {
                 NetHostCount++;
                 NetHost.StringIntegrate("CheckBtnAnswer," + NetHostCount + ";");
             }
-            if (SceneControl.GameNet == 2)
+            if (SceneControl.GameNet == 2 && SceneControl.GameMode <= 1)
             {
                 NetClientCount++;
                 NetClient.StringIntegrate("CheckBtnAnswer," + NetClientCount + ";");
@@ -1301,45 +1684,42 @@ public class Stage : MonoBehaviour
 
 
         //若單純只有滑鼠左鍵按下彈起，則點開該Btn內容物
-        if (Input.GetMouseButtonUp(0) && MouseDownLeft && !MouseDownRight && MouseDownOnBtn && stagephase == 1 && HoverX != -1 && HoverY != -1 && NetAvlb)
+        if (Input.GetMouseButtonUp(0) && MouseDownLeft && !MouseDownRight && MouseDownOnBtn && stagephase == 1 && HoverX != -1 && HoverY != -1)
         {
-            NetAvlb = false;
             FramePosX = HoverX;
             FramePosY = HoverY;
             KeyActive();
             BtnPress(HoverX, HoverY);
 
-            if (SceneControl.GameNet == 1)
+            if (SceneControl.GameNet == 1 && SceneControl.GameMode != 2)
             {
                 NetHostCount++;
                 NetHost.StringIntegrate("BtnPress," + NetHostCount + "," + SelectX + "," + SelectY + ";");
             }
-            if (SceneControl.GameNet == 2)
+            if (SceneControl.GameNet == 2 && SceneControl.GameMode != 2)
             {
                 NetClientCount++;
                 NetClient.StringIntegrate("BtnPress," + NetClientCount + "," + SelectX + "," + SelectY + ";");
             }
         }
-        if ((Input.GetButtonUp("Jump")||Input.GetKeyUp("h")) && KeyDownLeft && !KeyDownRight && stagephase == 1 && FramePos == 0 && NetAvlb)
+        if ((Input.GetButtonUp("Jump")||Input.GetKeyUp("h")) && KeyDownLeft && !KeyDownRight && stagephase == 1 && FramePos == 0)
         {
-            NetAvlb = false;
             KeyActive();
             BtnPress(FramePosX, FramePosY);
 
-            if (SceneControl.GameNet == 1)
+            if (SceneControl.GameNet == 1 && SceneControl.GameMode != 2)
             {
                 NetHostCount++;
                 NetHost.StringIntegrate("BtnPress," + NetHostCount + "," + SelectX + "," + SelectY + ";");
             }
-            if (SceneControl.GameNet == 2)
+            if (SceneControl.GameNet == 2 && SceneControl.GameMode != 2)
             {
                 NetClientCount++;
                 NetClient.StringIntegrate("BtnPress," + NetClientCount + "," + SelectX + "," + SelectY + ";");
             }
         }
-        if (Input.GetMouseButtonUp(0) && MouseDownLeft && !MouseDownRight && MouseDownOnBtn && stagephase == 0 && HoverX != -1 && HoverY != -1 && NetAvlb)
+        if (Input.GetMouseButtonUp(0) && MouseDownLeft && !MouseDownRight && MouseDownOnBtn && stagephase == 0 && HoverX != -1 && HoverY != -1)
         {
-            NetAvlb = false;
             FramePosX = HoverX;
             FramePosY = HoverY;
             Frame2Pos = 0;
@@ -1362,9 +1742,8 @@ public class Stage : MonoBehaviour
                 NetHost.StringIntegrate(strtmp + ";");
             }
         }
-        if ((Input.GetButtonUp("Jump")||Input.GetKeyUp("h")) && KeyDownLeft && !KeyDownRight && stagephase == 0 && FramePos == 0 && NetAvlb)
+        if ((Input.GetButtonUp("Jump")||Input.GetKeyUp("h")) && KeyDownLeft && !KeyDownRight && stagephase == 0 && FramePos == 0)
         {
-            NetAvlb = false;
             Frame2Pos = 0;
             Frame2PosX = 0;
             Frame2PosY = 0;
@@ -1387,129 +1766,113 @@ public class Stage : MonoBehaviour
         }
 
         //若單純只有滑鼠右鍵按下彈起，則開關預測可能為地雷的功能
-        if (Input.GetMouseButtonUp(1) && !MouseDownLeft && MouseDownRight && MouseDownOnBtn && stagephase == 1 && HoverX != -1 && HoverY != -1 && NetAvlb)
+        if (Input.GetMouseButtonUp(1) && !MouseDownLeft && MouseDownRight && MouseDownOnBtn && stagephase == 1 && HoverX != -1 && HoverY != -1)
         {
-            NetAvlb = false;
             FramePosX = HoverX;
             FramePosY = HoverY;
             KeyActive();
             BtnPredict(HoverX, HoverY, 0);
-            if (SceneControl.GameNet == 1)
+            if (SceneControl.GameNet == 1 && SceneControl.GameMode != 2)
             {
                 NetHostCount++;
-                NetHost.StringIntegrate("BtnPredict," + NetHostCount + "," + HoverX + "," + HoverY + ",0" + ";");
+                NetHost.StringIntegrate("BtnPredict," + NetHostCount + "," + SelectX + "," + SelectY + ",0" + ";");
             }
-            if (SceneControl.GameNet == 2)
+            if (SceneControl.GameNet == 2 && SceneControl.GameMode != 2)
             {
                 NetClientCount++;
-                NetClient.StringIntegrate("BtnPredict," + NetClientCount + "," + HoverX + "," + HoverY + ",0" + ";");
+                NetClient.StringIntegrate("BtnPredict," + NetClientCount + "," + SelectX + "," + SelectY + ",0" + ";");
             }
         }
-        if ((Input.GetButtonUp("Fire1")||Input.GetKeyUp("j")) && !KeyDownLeft && KeyDownRight && stagephase == 1 && FramePos == 0 && NetAvlb)
+        if ((Input.GetButtonUp("Fire1")||Input.GetKeyUp("j")) && !KeyDownLeft && KeyDownRight && stagephase == 1 && FramePos == 0)
         {
-            NetAvlb = false;
-            FramePosX = HoverX;
-            FramePosY = HoverY;
             KeyActive();
             BtnPredict(FramePosX, FramePosY, 0);
-            if (SceneControl.GameNet == 1)
+            if (SceneControl.GameNet == 1 && SceneControl.GameMode != 2)
             {
                 NetHostCount++;
-                NetHost.StringIntegrate("BtnPredict," + NetHostCount + "," + HoverX + "," + HoverY + ",0" + ";");
+                NetHost.StringIntegrate("BtnPredict," + NetHostCount + "," + SelectX + "," + SelectY + ",0" + ";");
             }
-            if (SceneControl.GameNet == 2)
+            if (SceneControl.GameNet == 2 && SceneControl.GameMode != 2)
             {
                 NetClientCount++;
-                NetClient.StringIntegrate("BtnPredict," + NetClientCount + "," + HoverX + "," + HoverY + ",0" + ";");
+                NetClient.StringIntegrate("BtnPredict," + NetClientCount + "," + SelectX + "," + SelectY + ",0" + ";");
             }
         }
-        if (Input.GetKeyUp("n") && KeyDownMPlus && stagephase == 1 && FramePos == 0 && NetAvlb)
+        if (Input.GetKeyUp("n") && KeyDownMPlus && stagephase == 1 && FramePos == 0)
         {
-            NetAvlb = false;
-            FramePosX = HoverX;
-            FramePosY = HoverY;
             KeyActive();
             BtnPredict(FramePosX, FramePosY, 1);
-            if (SceneControl.GameNet == 1)
+            if (SceneControl.GameNet == 1 && SceneControl.GameMode != 2)
             {
                 NetHostCount++;
-                NetHost.StringIntegrate("BtnPredict," + NetHostCount + "," + HoverX + "," + HoverY + ",1" + ";");
+                NetHost.StringIntegrate("BtnPredict," + NetHostCount + "," + SelectX + "," + SelectY + ",1" + ";");
             }
-            if (SceneControl.GameNet == 2)
+            if (SceneControl.GameNet == 2 && SceneControl.GameMode != 2)
             {
                 NetClientCount++;
-                NetClient.StringIntegrate("BtnPredict," + NetClientCount + "," + HoverX + "," + HoverY + ",1" + ";");
+                NetClient.StringIntegrate("BtnPredict," + NetClientCount + "," + SelectX + "," + SelectY + ",1" + ";");
             }
         }
-        if (Input.GetKeyUp("m") && KeyDownMMinus && stagephase == 1 && FramePos == 0 && NetAvlb)
+        if (Input.GetKeyUp("m") && KeyDownMMinus && stagephase == 1 && FramePos == 0)
         {
-            NetAvlb = false;
-            FramePosX = HoverX;
-            FramePosY = HoverY;
             KeyActive();
             BtnPredict(FramePosX, FramePosY, 2);
-            if (SceneControl.GameNet == 1)
+            if (SceneControl.GameNet == 1 && SceneControl.GameMode != 2)
             {
                 NetHostCount++;
-                NetHost.StringIntegrate("BtnPredict," + NetHostCount + "," + HoverX + "," + HoverY + ",2" + ";");
+                NetHost.StringIntegrate("BtnPredict," + NetHostCount + "," + SelectX + "," + SelectY + ",2" + ";");
             }
-            if (SceneControl.GameNet == 2)
+            if (SceneControl.GameNet == 2 && SceneControl.GameMode != 2)
             {
                 NetClientCount++;
-                NetClient.StringIntegrate("BtnPredict," + NetClientCount + "," + HoverX + "," + HoverY + ",2" + ";");
+                NetClient.StringIntegrate("BtnPredict," + NetClientCount + "," + SelectX + "," + SelectY + ",2" + ";");
             }
         }
-        if (Input.GetKeyUp(",") && KeyDownMQues && stagephase == 1 && FramePos == 0 && NetAvlb)
+        if (Input.GetKeyUp(",") && KeyDownMQues && stagephase == 1 && FramePos == 0)
         {
-            NetAvlb = false;
-            FramePosX = HoverX;
-            FramePosY = HoverY;
             KeyActive();
             BtnPredict(FramePosX, FramePosY, 3);
-            if (SceneControl.GameNet == 1)
+            if (SceneControl.GameNet == 1 && SceneControl.GameMode != 2)
             {
                 NetHostCount++;
-                NetHost.StringIntegrate("BtnPredict," + NetHostCount + "," + HoverX + "," + HoverY + ",3" + ";");
+                NetHost.StringIntegrate("BtnPredict," + NetHostCount + "," + SelectX + "," + SelectY + ",3" + ";");
             }
-            if (SceneControl.GameNet == 2)
+            if (SceneControl.GameNet == 2 && SceneControl.GameMode != 2)
             {
                 NetClientCount++;
-                NetClient.StringIntegrate("BtnPredict," + NetClientCount + "," + HoverX + "," + HoverY + ",3" + ";");
+                NetClient.StringIntegrate("BtnPredict," + NetClientCount + "," + SelectX + "," + SelectY + ",3" + ";");
             }
         }
 
         //若滑鼠左鍵與滑鼠右鍵同時按下並且其中一鍵彈起，則確認附近8格Btn預測地雷數與點下Btn數值是否相同，進而開拓其他位置的Btn
-        if ((Input.GetMouseButtonUp(0)||Input.GetMouseButtonUp(1)) && stagephase == 1 && MouseDownLeft && MouseDownRight && MouseDownOnBtn && HoverX != -1 && HoverY != -1 && NetAvlb)
+        if ((Input.GetMouseButtonUp(0)||Input.GetMouseButtonUp(1)) && stagephase == 1 && MouseDownLeft && MouseDownRight && MouseDownOnBtn && HoverX != -1 && HoverY != -1)
         {
-            NetAvlb = false;
             FramePosX = HoverX;
             FramePosY = HoverY;
             KeyActive();
             BtnEightCheck(HoverX, HoverY);
-            if (SceneControl.GameNet == 1)
+            if (SceneControl.GameNet == 1 && SceneControl.GameMode != 2)
             {
                 NetHostCount++;
                 NetHost.StringIntegrate("BtnEightCheck," + NetHostCount + "," + SelectX + "," + SelectY + ";");
             }
-            if (SceneControl.GameNet == 2)
+            if (SceneControl.GameNet == 2 && SceneControl.GameMode != 2)
             {
                 NetClientCount++;
                 NetClient.StringIntegrate("BtnEightCheck," + NetClientCount + "," + SelectX + "," + SelectY + ";");
             }
         }
-        if ((Input.GetButtonUp("Jump")||Input.GetKeyUp("h")||Input.GetButtonUp("Fire1")||Input.GetKeyUp("j")) && stagephase == 1 && KeyDownLeft && KeyDownRight && FramePos == 0 && NetAvlb)
+        if ((Input.GetButtonUp("Jump")||Input.GetKeyUp("h")||Input.GetButtonUp("Fire1")||Input.GetKeyUp("j")) && stagephase == 1 && KeyDownLeft && KeyDownRight && FramePos == 0)
         {
-            NetAvlb = false;
-            FramePosX = HoverX;
-            FramePosY = HoverY;
             KeyActive();
             BtnEightCheck(FramePosX, FramePosY);
-            if (SceneControl.GameNet == 1)
+            if (SceneControl.GameNet == 1 && SceneControl.GameMode != 2)
             {
+
                 NetHostCount++;
                 NetHost.StringIntegrate("BtnEightCheck," + NetHostCount + "," + SelectX + "," + SelectY + ";");
             }
-            if (SceneControl.GameNet == 2)
+            if (SceneControl.GameNet == 2 && SceneControl.GameMode != 2)
             {
                 NetClientCount++;
                 NetClient.StringIntegrate("BtnEightCheck," + NetClientCount + "," + SelectX + "," + SelectY + ";");
@@ -1530,7 +1893,7 @@ public class Stage : MonoBehaviour
                 {
                     if (sgmap[i,j] == 1 && sgnum[i,j] == 0)
                     {
-                    sgopnbtn[i,j] = 1;
+                        sgopnbtn[i,j] = 1;
                     }
                 }
             }
@@ -1541,18 +1904,17 @@ public class Stage : MonoBehaviour
                 {
                     if (sgopnbtn[i,j] == 1)
                     {
-                    CheckUDLRBtn(i, j, false);
-                    sgopnbtn[i,j] = 0;
-                    sgmap[i,j] = 2;
+                        CheckUDLRBtn(i, j, false);
+                        sgopnbtn[i,j] = 0;
+                        sgmap[i,j] = 2;
                     }
                 }
             }
         }
 
         //偵測螢幕大小是否變更
-        if ((ScnX != Screen.width || ScnY != Screen.height) && CreateBtnFlag && NetAvlb)
+        if ((ScnX != Screen.width || ScnY != Screen.height) && CreateBtnFlag)
         {
-            NetAvlb = false;
             //移除所有已創建的Btn
             DestroyBtn();
             BtnCheckAns.GetComponent<Button>().interactable = false;
@@ -1581,7 +1943,7 @@ public class Stage : MonoBehaviour
         //偵測滑鼠左右鍵是否被彈起
         if (Input.GetMouseButtonUp(0)) {MouseDownLeft = false; MouseDownOnBtn = false; MouseDownOnBtnCrtStage = false; MouseDownOnBtnCheckAns = false;}
         if (Input.GetMouseButtonUp(1)) {MouseDownRight = false; MouseDownOnBtn = false; MouseDownOnBtnCrtStage = false; MouseDownOnBtnCheckAns = false;}
-        if (Input.GetButtonUp("Jump")||Input.GetKeyUp("h")) {KeyDownLeft = false;}
+        if (Input.GetButtonUp("Jump")||Input.GetKeyUp("h")||Input.GetKeyUp("enter")) {KeyDownLeft = false;}
         if (Input.GetButtonUp("Fire1")||Input.GetKeyUp("j")) {KeyDownRight = false;}
         if (Input.GetKeyUp("n")) {KeyDownMPlus = false;}
         if (Input.GetKeyUp("m")) {KeyDownMMinus = false;}

@@ -14,6 +14,7 @@ ScriptsOnlyBuild:
     - UnityEditor.U2D.Animation.BoneGizmo
     Unity.2D.IK.Editor.dll:
     - UnityEditor.U2D.IK.IKEditorManager
+    - UnityEditor.U2D.IK.IKGizmos
     Unity.2D.Sprite.Editor.dll:
     - UnityEditor.U2D.Sprites.SpriteEditorWindow
     Unity.2D.Tilemap.Editor.dll:
@@ -44,6 +45,7 @@ ScriptsOnlyBuild:
     - UnityEngine.UI.GraphicRaycaster
     - UnityEngine.UI.Image
     - UnityEngine.UI.InputField
+    - UnityEngine.UI.Slider
     - UnityEngine.UI.Text
   sceneClasses:
     Assets/Scenes/MainGame.unity:
@@ -73,6 +75,8 @@ ScriptsOnlyBuild:
       Script: {instanceID: 1458}
     - Class: 114
       Script: {instanceID: 1672}
+    - Class: 114
+      Script: {instanceID: 1724}
     - Class: 114
       Script: {instanceID: 2258}
     - Class: 114
@@ -495,7 +499,7 @@ ScriptsOnlyBuild:
     className: BaseInput
   - hash:
       serializedVersion: 2
-      Hash: 560f365d5428cf7c47eb601455b37f65
+      Hash: eed61e6e49a56178c28b75de8d1a3e3d
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: Stage
@@ -743,4 +747,4 @@ ScriptsOnlyBuild:
   scenePathNames:
   - Assets/Scenes/NetworkConnect.unity
   - Assets/Scenes/MainGame.unity
-  playerPath: C:/Users/hcyan/Desktop/003_PLAMAI V0.2.0/003_PLAMAI.exe
+  playerPath: D:/Dropbox/003_PLAMAI V0.2.0/003_PLAMAI.exe

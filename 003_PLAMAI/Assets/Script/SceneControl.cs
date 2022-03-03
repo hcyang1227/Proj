@@ -10,6 +10,8 @@ public class SceneControl : MonoBehaviour
     public static int GameMode = 0; //遊戲模式，0:單人遊戲 1:合作模式 2:對戰模式(時間) 3:對戰模式(對弈)
     public static bool GameNetFg = false; //遊戲是否連線成功的flag
     public static bool GameStartFg = false; //遊戲是否開始的flag
+    public static string GameName = "Player"; //玩家1的名字
+    public static string GameName2 = ""; //玩家2的名字
 
     void Start()
     {
@@ -29,7 +31,11 @@ public class SceneControl : MonoBehaviour
         GameStartFg = true;
         if (SceneControl.GameNet == 1)
         {
-            NetHost.StringIntegrate("<<合作模式>>;");
+            NetHost.StringIntegrate("<<合作模式>>;PlayerName,"+GameName+";");
+        }
+        if (SceneControl.GameNet == 2)
+        {
+            NetClient.StringIntegrate("PlayerName,"+GameName+";");
         }
         DontDestroyOnLoad(Camera);
         SceneManager.LoadScene("MainGame");
@@ -41,7 +47,11 @@ public class SceneControl : MonoBehaviour
         GameStartFg = true;
         if (SceneControl.GameNet == 1)
         {
-            NetHost.StringIntegrate("<<速度對戰>>;");
+            NetHost.StringIntegrate("<<競速模式>>;PlayerName,"+GameName+";");
+        }
+        if (SceneControl.GameNet == 2)
+        {
+            NetClient.StringIntegrate("PlayerName,"+GameName+";");
         }
         DontDestroyOnLoad(Camera);
         SceneManager.LoadScene("MainGame");
@@ -53,7 +63,11 @@ public class SceneControl : MonoBehaviour
         GameStartFg = true;
         if (SceneControl.GameNet == 1)
         {
-            NetHost.StringIntegrate("<<對弈模式>>;");
+            NetHost.StringIntegrate("<<對弈模式>>;PlayerName,"+GameName+";");
+        }
+        if (SceneControl.GameNet == 2)
+        {
+            NetClient.StringIntegrate("PlayerName,"+GameName+";");
         }
         DontDestroyOnLoad(Camera);
         SceneManager.LoadScene("MainGame");
@@ -64,7 +78,7 @@ public class SceneControl : MonoBehaviour
         if (SceneControl.GameNet == 2 && NetClient.recvStrPcs == "<<合作模式>>")
             GameNetCoop();
 
-        if (SceneControl.GameNet == 2 && NetClient.recvStrPcs == "<<速度對戰>>")
+        if (SceneControl.GameNet == 2 && NetClient.recvStrPcs == "<<競速模式>>")
             GameNetTime();
 
         if (SceneControl.GameNet == 2 && NetClient.recvStrPcs == "<<對弈模式>>")
