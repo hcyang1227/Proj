@@ -9,6 +9,8 @@ using UnityEngine.UI;
 public class NetConnect : MonoBehaviour
 {
     public GameObject Camera;
+    public InputField IFName;
+    string IFNameStr = "Player";
     public GameObject BtnGameStart;
     public GameObject BtnGameNetCoop;
     public GameObject BtnGameNetTime;
@@ -23,6 +25,8 @@ public class NetConnect : MonoBehaviour
     int IFIP2Num;
     int IFIP3Num;
     int IFIP4Num;
+    int IFIPPos = 1;
+    bool IFIPFg = false;
     public InputField IFMsg;
     public Button BtnMsg;
     public Text TextRecieve;
@@ -31,7 +35,18 @@ public class NetConnect : MonoBehaviour
     public void BtnHostClick()
     {
         SceneControl.GameNet = 1;
-        Camera.GetComponent<NetHost>().enabled = true;
+        IFName.interactable = false;
+        if (IFName.text != "")
+        {
+            SceneControl.GameName = IFName.text;
+            IFNameStr = IFName.text;
+        }
+        else
+        {
+            IFName.text = "Player";
+            SceneControl.GameName = "Player";
+            IFNameStr = "Player";
+        }
         BtnGameStart.GetComponent<Button>().interactable = false;
         BtnHost.GetComponent<Button>().interactable = false;
         BtnClient.GetComponent<Button>().interactable = false;
@@ -49,6 +64,7 @@ public class NetConnect : MonoBehaviour
                 TextRecieve.text = "此設備可能IP位址: " + ip.ToString() + "\n" + TextRecieve.text;
             }
         }
+        Camera.GetComponent<NetHost>().enabled = true;
     }
 
     public void BtnClientClick()
@@ -119,7 +135,18 @@ public class NetConnect : MonoBehaviour
         if (!IPCheckFail)
         {
             SceneControl.GameNet = 2;
-            Camera.GetComponent<NetClient>().enabled = true;
+            IFName.interactable = false;
+            if (IFName.text != "")
+            {
+                SceneControl.GameName = IFName.text;
+                IFNameStr = IFName.text;
+            }
+            else
+            {
+                IFName.text = "Player";
+                SceneControl.GameName = "Player";
+                IFNameStr = "Player";
+            }
             BtnGameStart.GetComponent<Button>().interactable = false;
             NetClient.ipAdd = IFIP1.text+"."+IFIP2.text+"."+IFIP3.text+"."+IFIP4.text;
             BtnHost.GetComponent<Button>().interactable = false;
@@ -130,18 +157,47 @@ public class NetConnect : MonoBehaviour
             IFIP4.interactable = false;
             IFMsg.interactable = true;
             BtnMsg.interactable = true;
+            Camera.GetComponent<NetClient>().enabled = true;
         }
     }
 
     // Start is called before the first frame update
     void Start()
     {
-
+        IFName.text = IFNameStr;
+        IFIP1.ActivateInputField();
     }
 
     // Update is called once per frame
     void Update()
     {
+        IFIPFg = true;
+
+        if (Input.GetKeyUp("tab") && IFIPPos == 1 && IFIPFg)
+        {
+            IFIP1.ActivateInputField();
+            IFIPPos = 2;
+            IFIPFg = false;
+        }
+        if (Input.GetKeyUp("tab") && IFIPPos == 2 && IFIPFg)
+        {
+            IFIP2.ActivateInputField();
+            IFIPPos = 3;
+            IFIPFg = false;
+        }
+        if (Input.GetKeyUp("tab") && IFIPPos == 3 && IFIPFg)
+        {
+            IFIP3.ActivateInputField();
+            IFIPPos = 4;
+            IFIPFg = false;
+        }
+        if (Input.GetKeyUp("tab") && IFIPPos == 4 && IFIPFg)
+        {
+            IFIP4.ActivateInputField();
+            IFIPPos = 1;
+            IFIPFg = false;
+        }
+
         if (SceneControl.GameNetFg)
         {
             BtnGameNetCoop.GetComponent<Button>().interactable = true;

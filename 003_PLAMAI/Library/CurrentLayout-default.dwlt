@@ -19,7 +19,7 @@ MonoBehaviour:
     width: 2560
     height: 1397.3334
   m_ShowMode: 4
-  m_Title: Project
+  m_Title: Console
   m_RootView: {fileID: 8}
   m_MinSize: {x: 875, y: 300}
   m_MaxSize: {x: 10000, y: 10000}
@@ -34,7 +34,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 12006, guid: 0000000000000000e000000000000000, type: 0}
-  m_Name: ProjectBrowser
+  m_Name: ConsoleWindow
   m_EditorClassIdentifier: 
   m_Children: []
   m_Position:
@@ -43,14 +43,14 @@ MonoBehaviour:
     y: 0
     width: 1101
     height: 583
-  m_MinSize: {x: 231, y: 271}
-  m_MaxSize: {x: 10001, y: 10021}
-  m_ActualView: {fileID: 19}
+  m_MinSize: {x: 101, y: 121}
+  m_MaxSize: {x: 4001, y: 4021}
+  m_ActualView: {fileID: 24}
   m_Panes:
   - {fileID: 19}
   - {fileID: 24}
-  m_Selected: 0
-  m_LastSelected: 1
+  m_Selected: 1
+  m_LastSelected: 0
 --- !u!114 &3
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -100,10 +100,10 @@ MonoBehaviour:
     y: 764
     width: 2001
     height: 583
-  m_MinSize: {x: 333, y: 271}
-  m_MaxSize: {x: 14003, y: 10021}
+  m_MinSize: {x: 203, y: 121}
+  m_MaxSize: {x: 8003, y: 4021}
   vertical: 0
-  controlID: 68
+  controlID: 23
 --- !u!114 &5
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -125,10 +125,10 @@ MonoBehaviour:
     y: 30
     width: 2560
     height: 1347
-  m_MinSize: {x: 678, y: 492}
-  m_MaxSize: {x: 18003, y: 14042}
+  m_MinSize: {x: 678, y: 342}
+  m_MaxSize: {x: 12003, y: 8042}
   vertical: 0
-  controlID: 120
+  controlID: 52
 --- !u!114 &6
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -277,10 +277,10 @@ MonoBehaviour:
     y: 0
     width: 2001
     height: 1347
-  m_MinSize: {x: 403, y: 492}
-  m_MaxSize: {x: 14003, y: 14042}
+  m_MinSize: {x: 403, y: 342}
+  m_MaxSize: {x: 8003, y: 8042}
   vertical: 1
-  controlID: 67
+  controlID: 53
 --- !u!114 &12
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -305,7 +305,7 @@ MonoBehaviour:
   m_MinSize: {x: 403, y: 221}
   m_MaxSize: {x: 8003, y: 4021}
   vertical: 0
-  controlID: 42
+  controlID: 54
 --- !u!114 &13
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -364,7 +364,7 @@ MonoBehaviour:
   m_Zoom: -1
   m_ScrollPosition: {x: 0, y: 0}
   m_SelectedObject: {fileID: 0}
-  m_SelectedSpriteRectGUID: daef1bc47ba2a4fa0800000000000000
+  m_SelectedSpriteRectGUID: 00000000000000000000000000000000
   m_LastUsedModuleTypeName: UnityEditor.U2D.Sprites.SpriteFrameModule
 --- !u!114 &15
 MonoBehaviour:
@@ -422,7 +422,7 @@ MonoBehaviour:
   m_ViewDataDictionary: {fileID: 0}
   m_LockTracker:
     m_IsLocked: 0
-  m_LastSelectedObjectID: 94870
+  m_LastSelectedObjectID: 18820
 --- !u!114 &17
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -564,21 +564,21 @@ MonoBehaviour:
     m_SkipHidden: 0
     m_SearchArea: 1
     m_Folders:
-    - Assets/Scenes
+    - Assets/Script
     m_Globs: []
     m_OriginalText: 
   m_ViewMode: 1
   m_StartGridSize: 64
   m_LastFolders:
-  - Assets/Scenes
+  - Assets/Script
   m_LastFoldersGridSize: -1
   m_LastProjectPath: C:\Users\hcyan\Desktop\Proj\003_PLAMAI
   m_LockTracker:
     m_IsLocked: 0
   m_FolderTreeState:
     scrollPos: {x: 0, y: 0}
-    m_SelectedIDs: 88440000
-    m_LastClickedID: 17544
+    m_SelectedIDs: 8a440000
+    m_LastClickedID: 17546
     m_ExpandedIDs: 000000007e44000000ca9a3b
     m_RenameOverlay:
       m_UserAcceptedRename: 0
@@ -728,9 +728,9 @@ MonoBehaviour:
   m_SceneHierarchy:
     m_TreeViewState:
       scrollPos: {x: 0, y: 0}
-      m_SelectedIDs: 8e440000
+      m_SelectedIDs: 
       m_LastClickedID: 0
-      m_ExpandedIDs: 208bfcff828bfcff9e8bfcff4e8cfcff5a8cfcff448dfcff608dfcff108efcff1c8efcff508ffcff668ffcffee8ffcff0a90fcffd490fcffd890fcffdc91fcfff891fcffc292fcffc692fcffc4b7fcffd8b8fcfff4b8fcffbeb9fcffc2b9fcff04bbfcff20bbfcffeebbfcfff6bbfcff14d0fcff3ed0fcff62d1fcff7ed1fcff2ed2fcff3ad2fcff30d3fcff4cd3fcff4ed3fcff52d3fcffdad3fcfff6d3fcfff8d3fcfffcd3fcff82d4fcff9ed4fcffa0d4fcffa4d4fcff2cd5fcff48d5fcfff8d5fcff04d6fcffb0d7fcffccd7fcff7cd8fcff88d8fcfff8e4fcff14e5fcffc4e5fcffd0e5fcffe8e6fcff04e7fcffb4e7fcffc0e7fcffe0e8fcfffce8fcfface9fcffb8e9fcff8eeafcffaaeafcff5aebfcff66ebfcff2eecfcff4aecfcfffaecfcff06edfcfffaedfcff16eefcffc6eefcffd2eefcff92effcffaeeffcff62f0fcff72f0fcffc4f0fcff8af1fcffa6f1fcffb8f1fcffbcf1fcff42f2fcff5ef2fcff28f3fcff2cf3fcff98f6fcffc4f6fcffd4f7fcfff0f7fcfff2f7fcfff6f7fcffbcf8fcffd8f8fcff88f9fcff94f9fcffa6fafcffc2fafcff72fbfcff7efbfcfff0fdfcff06fefcff16fefcffd84dfdfff44dfdffbe4efdffc24efdff7c50fdff9850fdff6251fdff6651fdff8e65fdffaa65fdff7466fdff7866fdff6e7afdff8a7afdff547bfdff587bfdffb68efdffd28efdff9c8ffdffa08ffdffaa91fdffc691fdff9092fdff9492fdfffea7fdff1aa8fdffe4a8fdffe8a8fdfffcbcfdff18bdfdffe2bdfdffe6bdfdff4ac0fdff66c0fdff34c1fdff3cc1fdff6cc1fdff92c1fdffb2c1fdff36c2feffacd5feff34d7feff50d7feff00d8feff0cd8feff6ac9ffff24caffff40cafffff6caffff06cbffff70cbffff5cdfffff78dfffff42e0ffff46e0ffffc6f4ffffe2f4ffffb0f5ffffb8f5ffff0cf6ffff24f7ffff40f7fffff2f7fffffef7ffff22faffff38faffff66fbfffff4ffffff2e460000587500009e8700001c8f000040eb00001efe0000c2fe00001a240100b6300100ca30010052310100e0720100
+      m_ExpandedIDs: 86bfffffa2bfffff6cc0ffff70c0ffffdec1fffffac1ffffc4c2ffffc8c2ffff90d6ffffacd6ffff76d7ffff7ad7ffffdcf9ffff02faffff60faffff76faffff66fbffffe8480000
       m_RenameOverlay:
         m_UserAcceptedRename: 0
         m_Name: 

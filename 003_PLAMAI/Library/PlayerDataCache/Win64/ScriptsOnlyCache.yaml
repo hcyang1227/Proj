@@ -571,7 +571,7 @@ ScriptsOnlyBuild:
     className: ActivationTrack
   - hash:
       serializedVersion: 2
-      Hash: 74a013f274a6916900ff3c5f0feaaa4c
+      Hash: 3a65d6d409ffa6cbcaa8e11560e5ab56
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: NetConnect
