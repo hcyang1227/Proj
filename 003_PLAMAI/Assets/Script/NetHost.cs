@@ -29,6 +29,8 @@ public class NetHost : MonoBehaviour
     int recvLen; //接收的資料長度
     Thread connectThread; //連線執行緒
 
+    public static bool connectState;
+
     //初始化
     void InitSocket()
     {
@@ -63,6 +65,7 @@ public class NetHost : MonoBehaviour
         StringIntegrate("歡迎來到房間"+roomnum.ToString()+";");
         TextRecieveStr = "您已連線成功\n"+TextRecieveStr;
         SceneControl.GameNetFg = true;
+        connectState = true;
     }
 
     public static void StringIntegrate(string sendStrTmp)
@@ -179,6 +182,36 @@ public class NetHost : MonoBehaviour
         {
             SocketSend();
             sendStr = "";
+        }
+
+        //測試連線是否安好
+        if (connectState)
+        {
+            try
+            {
+                byte[] tmp = new byte[1];
+                clientSocket.Send(tmp, 0, 0);
+                Debug.Log("傳送1byte驗證連線");
+            }
+            catch (SocketException e)
+            {
+                if (e.NativeErrorCode.Equals(10035))
+                {
+                    connectState = true;
+                    if (recvStr != "")
+                        recvStr=recvStr+"Alarm,10035,仍然在連線中，但送出資料被擋住;";
+                    else
+                        recvStr="Alarm,10035,仍然在連線中，但送出資料被擋住;";
+                }
+                else
+                {
+                    connectState = false;
+                    if (recvStr != "")
+                        recvStr=recvStr+"Alarm,"+e.NativeErrorCode.ToString()+",發生斷線！;";
+                    else
+                        recvStr="Alarm,"+e.NativeErrorCode.ToString()+",發生斷線！;";
+                }
+            }
         }
     }
 

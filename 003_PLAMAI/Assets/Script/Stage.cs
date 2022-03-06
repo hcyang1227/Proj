@@ -1,9 +1,9 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
-using System;
 
 public class Stage : MonoBehaviour
 {
@@ -48,8 +48,6 @@ public class Stage : MonoBehaviour
 
     public int SelectX; //目前選擇棋盤格位置X
     public int SelectY; //目前選擇棋盤格位置Y
-    public int ScnX; //視窗X長度記憶
-    public int ScnY; //視窗Y長度記憶
     public static int HoverX; //掠過棋盤格位置X
     public static int HoverY; //掠過棋盤格位置Y
     public static bool HoverCrtStage; //掠過創建關卡按鈕
@@ -64,7 +62,6 @@ public class Stage : MonoBehaviour
     bool KeyDownMPlus = false; //鍵盤n鍵按壓flag
     bool KeyDownMMinus = false; //鍵盤m鍵按壓flag
     bool KeyDownMQues = false; //鍵盤,鍵按壓flag
-    bool CreateBtnFlag = false; //是否已創建棋盤格Btn，true:當創建Btn時 false:當螢幕大小改變時
     bool ContinueZero = false; //拓展周圍地雷總和值為0的棋盤
     int WrongAns = 0; //錯誤答案處數計數器
     bool ControllerEnable = true; //右上方可否看到輸入欄等UI控制元件
@@ -258,8 +255,7 @@ public class Stage : MonoBehaviour
             }
         }
 
-        //豎起創建Btn的旗幟
-        CreateBtnFlag = true;
+        uiText.text = 1f*Screen.width/Screen.height + uiText.text;
 
         //將Frame移到創建關卡
         FramePosX = 0;
@@ -283,7 +279,16 @@ public class Stage : MonoBehaviour
 
     public void CrtBtnLp(int i, int j)
     {
-        Vector3 myVector = Canvas.transform.position + new Vector3(30f*i-(StageNumX+1)*15f, (StageNumY+1)*15f-j*30f, 0);
+        Vector3 myVector;
+        if (1f*Screen.width/Screen.height >= 1578f/776f)
+        {
+            myVector = Canvas.transform.position + new Vector3(30f*i-(StageNumX+1)*15f, (StageNumY+1)*15f-j*30f, 0);
+        }
+        else
+        {
+            float RatioConst = (1f*Screen.width/Screen.height)/(1578f/776f);
+            myVector = Canvas.transform.position + new Vector3((30f*i-(StageNumX+1)*15f)*RatioConst, ((StageNumY+1)*15f-j*30f)*RatioConst, 0);
+        }
         GameObject Clone;
         Clone = (GameObject)Instantiate(Btn, myVector, new Quaternion(), BtnZone.transform);
         Clone.GetComponent<Image>().color = Color.white;
@@ -941,6 +946,33 @@ public class Stage : MonoBehaviour
 
     //--------------------------------------------------------------------------------------------------------
 
+    //移除所有已創建的Btn
+    void ResetBtn()
+    {
+        DestroyBtn();
+        BtnCheckAns.GetComponent<Button>().interactable = false;
+        SetController(true);
+
+        FramePos = 1;
+        FramePos2 = 2;
+        Frame2Pos = 1;
+        Frame2Pos2 = 2;
+        KeyActive();
+
+        if (SceneControl.GameNet == 1)
+        {
+            NetHostCount = 0;
+            NetHost.StringIntegrate("Alarm," + NetHostCount + ",100,對方發生程序錯誤，清除盤面" + ";");
+        }
+        if (SceneControl.GameNet == 2)
+        {
+            NetClientCount = 0;
+            NetClient.StringIntegrate("Alarm," + NetClientCount + ",101,對方發生程序錯誤，清除盤面" + ";");
+        }
+    }
+
+    //--------------------------------------------------------------------------------------------------------
+
     void SliderCal()
     {
         int BtnExpand = 0;
@@ -978,7 +1010,7 @@ public class Stage : MonoBehaviour
     {
         //踩地雷遊戲完成進度條
         StageTime += Time.deltaTime;
-        if (StageTime > StageTimeTmp + 0.05f && stagephase == 1)
+        if (StageTime > StageTimeTmp + 0.05f && stagephase >= 1)
         {
             SliderCal();
             if (SceneControl.GameNet == 1 && SceneControl.GameMode == 2 && SliderFloat != SliderFloatPre)
@@ -1012,7 +1044,7 @@ public class Stage : MonoBehaviour
                         BtnPress(int.Parse(strAry[2]),int.Parse(strAry[3]));
                         KeyActive();
                     }
-                    else {uiText.text = "<color=red>BtnPress連線出錯>___<</color>\n" + uiText.text;}
+                    else {uiText.text = "<color=red>BtnPress連線出錯>___<</color>\n" + uiText.text; ResetBtn();}
                     break;
                 case "BtnPredict":
                     NetClientGetCount++;
@@ -1024,7 +1056,7 @@ public class Stage : MonoBehaviour
                         BtnPredict(int.Parse(strAry[2]),int.Parse(strAry[3]),int.Parse(strAry[4]));
                         KeyActive();
                     }
-                    else {uiText.text = "<color=red>BtnPredict連線出錯>___<</color>\n" + uiText.text;}
+                    else {uiText.text = "<color=red>BtnPredict連線出錯>___<</color>\n" + uiText.text; ResetBtn();}
                     break;
                 case "BtnEightCheck":
                     NetClientGetCount++;
@@ -1036,7 +1068,7 @@ public class Stage : MonoBehaviour
                         BtnEightCheck(int.Parse(strAry[2]),int.Parse(strAry[3]));
                         KeyActive();
                     }
-                    else {uiText.text = "<color=red>BtnEightCheck連線出錯>___<</color>\n" + uiText.text;}
+                    else {uiText.text = "<color=red>BtnEightCheck連線出錯>___<</color>\n" + uiText.text; ResetBtn();}
                     break;
                 case "CheckBtnAnswer":
                     NetClientGetCount++;
@@ -1044,7 +1076,7 @@ public class Stage : MonoBehaviour
                     {
                         CheckBtnAnswer();
                     }
-                    else {uiText.text = "<color=red>CheckBtnAnswer連線出錯>___<</color>\n" + uiText.text;}
+                    else {uiText.text = "<color=red>CheckBtnAnswer連線出錯>___<</color>\n" + uiText.text; ResetBtn();}
                     break;
                 case "SpdModeWin":
                     NetClientGetCount++;
@@ -1060,11 +1092,10 @@ public class Stage : MonoBehaviour
                         FrameAni.Play("FrameL");
                         Frame2Pos = 1;
                         Frame2Pos2 = 2;
-                        Frame2Ani.Play("Frame2L");
                         KeyActive();
                         BtnCheckAns.GetComponent<Button>().interactable = false;
                     }
-                    else {uiText.text = "<color=red>SpdModeWin連線出錯>___<</color>\n" + uiText.text;}
+                    else {uiText.text = "<color=red>SpdModeWin連線出錯>___<</color>\n" + uiText.text; ResetBtn();}
                     break;
                 case "SpdModeWin2":
                     NetClientGetCount++;
@@ -1080,11 +1111,10 @@ public class Stage : MonoBehaviour
                         FrameAni.Play("FrameL");
                         Frame2Pos = 1;
                         Frame2Pos2 = 2;
-                        Frame2Ani.Play("Frame2L");
                         KeyActive();
                         BtnCheckAns.GetComponent<Button>().interactable = false;
                     }
-                    else {uiText.text = "<color=red>SpdModeWin2連線出錯>___<</color>\n" + uiText.text;}
+                    else {uiText.text = "<color=red>SpdModeWin2連線出錯>___<</color>\n" + uiText.text; ResetBtn();}
                     break;
                 case "SpdModeLose":
                     NetClientGetCount++;
@@ -1102,11 +1132,10 @@ public class Stage : MonoBehaviour
                         FrameAni.Play("FrameL");
                         Frame2Pos = 1;
                         Frame2Pos2 = 2;
-                        Frame2Ani.Play("Frame2L");
                         KeyActive();
                         BtnCheckAns.GetComponent<Button>().interactable = false;
                     }
-                    else {uiText.text = "<color=red>SpdModeLose連線出錯>___<</color>\n" + uiText.text;}
+                    else {uiText.text = "<color=red>SpdModeLose連線出錯>___<</color>\n" + uiText.text; ResetBtn();}
                     break;
                 case "FrameChgPos":
                     NetClientGetCount++;
@@ -1118,7 +1147,7 @@ public class Stage : MonoBehaviour
                         Frame2PosY = int.Parse(strAry[5]);
                         KeyActive();
                     }
-                    else {uiText.text = "<color=red>FrameChgPos連線出錯>___<</color>\n" + uiText.text;}
+                    else {uiText.text = "<color=red>FrameChgPos連線出錯>___<</color>\n" + uiText.text; ResetBtn();}
                     break;
                 case "SliderVal":
                     NetClientGetCount++;
@@ -1126,7 +1155,7 @@ public class Stage : MonoBehaviour
                     {
                         Slider2Float = float.Parse(strAry[2]);
                     }
-                    else {uiText.text = "<color=red>SliderVal連線出錯>___<</color>\n" + uiText.text;}
+                    else {uiText.text = "<color=red>SliderVal連線出錯>___<</color>\n" + uiText.text; ResetBtn();}
                     break;
                 case "PlayerName":
                     SceneControl.GameName2 = strAry[1];
@@ -1199,7 +1228,7 @@ public class Stage : MonoBehaviour
                                 break;
                         }
                     }
-                    else {uiText.text = "<color=red>CrtBtn連線出錯>___<</color>\n" + uiText.text;}
+                    else {uiText.text = "<color=red>CrtBtn連線出錯>___<</color>\n" + uiText.text; ResetBtn();}
                     break;
                 case "BtnPressInit":
                     NetHostGetCount++;
@@ -1224,7 +1253,7 @@ public class Stage : MonoBehaviour
                         KeyActive();
                         uiText.text = "<color=magenta>服務端已決定地雷數量並開始遊戲...</color>\n" + uiText.text;
                     }
-                    else {uiText.text = "<color=red>BtnPressInit連線出錯>___<</color>\n" + uiText.text;}
+                    else {uiText.text = "<color=red>BtnPressInit連線出錯>___<</color>\n" + uiText.text; ResetBtn();}
                     break;
                 case "BtnPress":
                     NetHostGetCount++;
@@ -1236,7 +1265,7 @@ public class Stage : MonoBehaviour
                         BtnPress(int.Parse(strAry[2]),int.Parse(strAry[3]));
                         KeyActive();
                     }
-                    else {uiText.text = "<color=red>BtnPress連線出錯>___<</color>\n" + uiText.text;}
+                    else {uiText.text = "<color=red>BtnPress連線出錯>___<</color>\n" + uiText.text; ResetBtn();}
                     break;
                 case "BtnPredict":
                     NetHostGetCount++;
@@ -1248,7 +1277,7 @@ public class Stage : MonoBehaviour
                         BtnPredict(int.Parse(strAry[2]),int.Parse(strAry[3]),int.Parse(strAry[4]));
                         KeyActive();
                     }
-                    else {uiText.text = "<color=red>BtnPredict連線出錯>___<</color>\n" + uiText.text;}
+                    else {uiText.text = "<color=red>BtnPredict連線出錯>___<</color>\n" + uiText.text; ResetBtn();}
                     break;
                 case "BtnEightCheck":
                     NetHostGetCount++;
@@ -1260,7 +1289,7 @@ public class Stage : MonoBehaviour
                         BtnEightCheck(int.Parse(strAry[2]),int.Parse(strAry[3]));
                         KeyActive();
                     }
-                    else {uiText.text = "<color=red>BtnEightCheck連線出錯>___<</color>\n" + uiText.text;}
+                    else {uiText.text = "<color=red>BtnEightCheck連線出錯>___<</color>\n" + uiText.text; ResetBtn();}
                     break;
                 case "CheckBtnAnswer":
                     NetHostGetCount++;
@@ -1268,7 +1297,7 @@ public class Stage : MonoBehaviour
                     {
                         CheckBtnAnswer();
                     }
-                    else {uiText.text = "<color=red>CheckBtnAnswer連線出錯>___<</color>\n" + uiText.text;}
+                    else {uiText.text = "<color=red>CheckBtnAnswer連線出錯>___<</color>\n" + uiText.text; ResetBtn();}
                     break;
                 case "SpdModeWin":
                     NetHostGetCount++;
@@ -1284,11 +1313,10 @@ public class Stage : MonoBehaviour
                         FrameAni.Play("FrameL");
                         Frame2Pos = 1;
                         Frame2Pos2 = 2;
-                        Frame2Ani.Play("Frame2L");
                         KeyActive();
                         BtnCheckAns.GetComponent<Button>().interactable = false;
                     }
-                    else {uiText.text = "<color=red>SpdModeWin連線出錯>___<</color>\n" + uiText.text;}
+                    else {uiText.text = "<color=red>SpdModeWin連線出錯>___<</color>\n" + uiText.text; ResetBtn();}
                     break;
                 case "SpdModeWin2":
                     NetHostGetCount++;
@@ -1304,11 +1332,10 @@ public class Stage : MonoBehaviour
                         FrameAni.Play("FrameL");
                         Frame2Pos = 1;
                         Frame2Pos2 = 2;
-                        Frame2Ani.Play("Frame2L");
                         KeyActive();
                         BtnCheckAns.GetComponent<Button>().interactable = false;
                     }
-                    else {uiText.text = "<color=red>SpdModeWin2連線出錯>___<</color>\n" + uiText.text;}
+                    else {uiText.text = "<color=red>SpdModeWin2連線出錯>___<</color>\n" + uiText.text; ResetBtn();}
                     break;
                 case "SpdModeLose":
                     NetHostGetCount++;
@@ -1326,11 +1353,10 @@ public class Stage : MonoBehaviour
                         FrameAni.Play("FrameL");
                         Frame2Pos = 1;
                         Frame2Pos2 = 2;
-                        Frame2Ani.Play("Frame2L");
                         KeyActive();
                         BtnCheckAns.GetComponent<Button>().interactable = false;
                     }
-                    else {uiText.text = "<color=red>SpdModeLose連線出錯>___<</color>\n" + uiText.text;}
+                    else {uiText.text = "<color=red>SpdModeLose連線出錯>___<</color>\n" + uiText.text; ResetBtn();}
                     break;
                 case "FrameChgPos":
                     NetHostGetCount++;
@@ -1342,7 +1368,7 @@ public class Stage : MonoBehaviour
                         Frame2PosY = int.Parse(strAry[5]);
                         KeyActive();
                     }
-                    else {uiText.text = "<color=red>FrameChgPos連線出錯>___<</color>\n" + uiText.text;}
+                    else {uiText.text = "<color=red>FrameChgPos連線出錯>___<</color>\n" + uiText.text; ResetBtn();}
                     break;
                 case "SliderVal":
                     NetHostGetCount++;
@@ -1350,7 +1376,7 @@ public class Stage : MonoBehaviour
                     {
                         Slider2Float = float.Parse(strAry[2]);
                     }
-                    else {uiText.text = "<color=red>SliderVal連線出錯>___<</color>\n" + uiText.text;}
+                    else {uiText.text = "<color=red>SliderVal連線出錯>___<</color>\n" + uiText.text; ResetBtn();}
                     break;
                 case "PlayerName":
                     SceneControl.GameName2 = strAry[1];
@@ -1912,34 +1938,6 @@ public class Stage : MonoBehaviour
             }
         }
 
-        //偵測螢幕大小是否變更
-        if ((ScnX != Screen.width || ScnY != Screen.height) && CreateBtnFlag)
-        {
-            //移除所有已創建的Btn
-            DestroyBtn();
-            BtnCheckAns.GetComponent<Button>().interactable = false;
-            SetController(true);
-            CreateBtnFlag = false;
-
-            FramePos = 1;
-            FramePos2 = 2;
-            Frame2Pos = 1;
-            Frame2Pos2 = 2;
-            KeyActive();
-
-            if (SceneControl.GameNet == 1)
-            {
-                NetHostCount = 0;
-                NetHost.StringIntegrate("Alarm," + NetHostCount + ",100,服務端視窗被變更大小，重新遊戲" + ";");
-            }
-            if (SceneControl.GameNet == 2)
-            {
-                NetClientCount = 0;
-                NetClient.StringIntegrate("Alarm," + NetClientCount + ",101,客戶端視窗被變更大小，重新遊戲" + ";");
-            }
-
-        }
-
         //偵測滑鼠左右鍵是否被彈起
         if (Input.GetMouseButtonUp(0)) {MouseDownLeft = false; MouseDownOnBtn = false; MouseDownOnBtnCrtStage = false; MouseDownOnBtnCheckAns = false;}
         if (Input.GetMouseButtonUp(1)) {MouseDownRight = false; MouseDownOnBtn = false; MouseDownOnBtnCrtStage = false; MouseDownOnBtnCheckAns = false;}
@@ -1948,9 +1946,6 @@ public class Stage : MonoBehaviour
         if (Input.GetKeyUp("n")) {KeyDownMPlus = false;}
         if (Input.GetKeyUp("m")) {KeyDownMMinus = false;}
         if (Input.GetKeyUp(",")) {KeyDownMQues = false;}
-        //儲存變更的螢幕大小
-        ScnX = Screen.width;
-        ScnY = Screen.height;
 
     }
 
