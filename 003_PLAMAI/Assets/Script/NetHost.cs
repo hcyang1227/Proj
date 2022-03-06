@@ -85,7 +85,23 @@ public class NetHost : MonoBehaviour
         //資料型別轉換
         sendData=Encoding.UTF8.GetBytes(sendStr);
         //傳送
-        clientSocket.Send(sendData,sendData.Length,SocketFlags.None);
+        try
+        {
+            clientSocket.Send(sendData,sendData.Length,SocketFlags.None);
+        }
+        catch (SocketException e)
+        {
+            if (e.NativeErrorCode.Equals(10035))
+            {
+                connectState = true;
+                recvStr=recvStr+"Alarm,0,10035,仍然在連線中，但送出資料被擋住;";
+            }
+            else
+            {
+                connectState = false;
+                recvStr=recvStr+"Alarm,0,"+e.NativeErrorCode.ToString()+","+e.Message.Replace("\n","").Replace("\0","")+";";
+            }
+        }
     }
 
     //伺服器接收
@@ -99,7 +115,23 @@ public class NetHost : MonoBehaviour
             //對data清零
             recvData=new byte[8192];
             //獲取收到的資料的長度
-            recvLen=clientSocket.Receive(recvData);
+            try
+            {
+                recvLen=clientSocket.Receive(recvData);
+            }
+            catch (SocketException e)
+            {
+                if (e.NativeErrorCode.Equals(10035))
+                {
+                    connectState = true;
+                    recvStr=recvStr+"Alarm,0,10035,仍然在連線中，但送出資料被擋住;";
+                }
+                else
+                {
+                    connectState = false;
+                    recvStr=recvStr+"Alarm,0,"+e.NativeErrorCode.ToString()+","+e.Message.Replace("\n","").Replace("\0","")+";";
+                }
+            }
             //如果收到的資料長度為0，則重連並進入下一個迴圈
             if(recvLen==0)
             {
@@ -107,10 +139,7 @@ public class NetHost : MonoBehaviour
                 continue;
             }
             //輸出接收到的資料
-            if (recvStr != "")
-                recvStr=recvStr+Encoding.UTF8.GetString(recvData,0,recvLen);
-            else
-                recvStr=Encoding.UTF8.GetString(recvData,0,recvLen);
+            recvStr=recvStr+Encoding.UTF8.GetString(recvData,0,recvLen);
             Debug.Log("recvStr= " + recvStr);
         }
     }
@@ -157,10 +186,7 @@ public class NetHost : MonoBehaviour
     {
         if (SceneControl.GameNet == 1 && (strAryTotal != "" || recvStr != ""))
         {
-            if (recvStr != "" && strAryTotal != "")
-                strAryTotal = strAryTotal + recvStr;
-            else if (recvStr != "" && strAryTotal == "")
-                strAryTotal = recvStr;
+            strAryTotal = strAryTotal + recvStr;
             string[] strAryLarge = strAryTotal.Split(';');
             recvStr = "";
             recvStrPcs = strAryLarge[0];
@@ -178,41 +204,23 @@ public class NetHost : MonoBehaviour
             TextRecieveStr = "";
         }
 
-        if (sendStr != "")
+        if (sendStr != "" && clientSocket!=null && clientSocket.Connected)
         {
             SocketSend();
             sendStr = "";
+            connectState = true;
+        }
+        else if (connectState && clientSocket==null)
+        {
+            recvStr=recvStr+"Alarm,0,400,clientSocket為空值;";
+            connectState = false;
+        }
+        else if (connectState && !clientSocket.Connected)
+        {
+            recvStr=recvStr+"Alarm,0,404,clientSocket未連線或斷開連線...;";
+            connectState = false;
         }
 
-        //測試連線是否安好
-        if (connectState)
-        {
-            try
-            {
-                byte[] tmp = new byte[1];
-                clientSocket.Send(tmp, 0, 0);
-                Debug.Log("傳送1byte驗證連線");
-            }
-            catch (SocketException e)
-            {
-                if (e.NativeErrorCode.Equals(10035))
-                {
-                    connectState = true;
-                    if (recvStr != "")
-                        recvStr=recvStr+"Alarm,10035,仍然在連線中，但送出資料被擋住;";
-                    else
-                        recvStr="Alarm,10035,仍然在連線中，但送出資料被擋住;";
-                }
-                else
-                {
-                    connectState = false;
-                    if (recvStr != "")
-                        recvStr=recvStr+"Alarm,"+e.NativeErrorCode.ToString()+",發生斷線！;";
-                    else
-                        recvStr="Alarm,"+e.NativeErrorCode.ToString()+",發生斷線！;";
-                }
-            }
-        }
     }
 
     void OnApplicationQuit()

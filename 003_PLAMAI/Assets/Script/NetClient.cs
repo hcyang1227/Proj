@@ -27,6 +27,8 @@ public class NetClient : MonoBehaviour
     int recvLen; //接收的資料長度
     Thread connectThread; //連線執行緒
 
+    public static bool connectState;
+
     //初始化
     void InitSocket()
     {
@@ -49,7 +51,23 @@ public class NetClient : MonoBehaviour
         serverSocket=new Socket(AddressFamily.InterNetwork,SocketType.Stream,ProtocolType.Tcp);
         TextRecieveStr = "準備連線...\n"+TextRecieveStr;
         //連線
-        serverSocket.Connect(ipEnd);
+        try
+        {
+            serverSocket.Connect(ipEnd);
+        }
+        catch (SocketException e)
+        {
+            if (e.NativeErrorCode.Equals(10035))
+            {
+                connectState = true;
+                recvStr=recvStr+"Alarm,0,10035,仍然在連線中，但送出資料被擋住;";
+            }
+            else
+            {
+                connectState = false;
+                recvStr=recvStr+"Alarm,0,"+e.NativeErrorCode.ToString()+","+e.Message.Replace("\n","").Replace("\0","")+";";
+            }
+        }
         // SceneControl.GameNetFg = true;  //Client端不需要開啟按鈕功能
     }
 
@@ -70,7 +88,23 @@ public class NetClient : MonoBehaviour
         //資料型別轉換
         sendData=Encoding.UTF8.GetBytes(sendStr);
         //傳送
-        serverSocket.Send(sendData,sendData.Length,SocketFlags.None);
+        try
+        {
+            serverSocket.Send(sendData,sendData.Length,SocketFlags.None);
+        }
+        catch (SocketException e)
+        {
+            if (e.NativeErrorCode.Equals(10035))
+            {
+                connectState = true;
+                recvStr=recvStr+"Alarm,0,10035,仍然在連線中，但送出資料被擋住;";
+            }
+            else
+            {
+                connectState = false;
+                recvStr=recvStr+"Alarm,0,"+e.NativeErrorCode.ToString()+","+e.Message.Replace("\n","").Replace("\0","")+";";
+            }
+        }
     }
 
     void SocketReceive()
@@ -80,17 +114,30 @@ public class NetClient : MonoBehaviour
         while(true)
         {
             recvData=new byte[8192];
-            recvLen=serverSocket.Receive(recvData);
+            try
+            {
+                recvLen=serverSocket.Receive(recvData);
+            }
+            catch (SocketException e)
+            {
+                if (e.NativeErrorCode.Equals(10035))
+                {
+                    connectState = true;
+                    recvStr=recvStr+"Alarm,0,10035,仍然在連線中，但送出資料被擋住;";
+                }
+                else
+                {
+                    connectState = false;
+                    recvStr=recvStr+"Alarm,0,"+e.NativeErrorCode.ToString()+","+e.Message.Replace("\n","").Replace("\0","")+";";
+                }
+            }
             if(recvLen==0)
             {
                 SocketConnet();
                 continue;
             }
             //輸出接收到的資料
-            if (recvStr != "")
-                recvStr=recvStr+Encoding.UTF8.GetString(recvData,0,recvLen);
-            else
-                recvStr=Encoding.UTF8.GetString(recvData,0,recvLen);
+            recvStr=recvStr+Encoding.UTF8.GetString(recvData,0,recvLen);
             Debug.Log("recvStr= " + recvStr);
         }
     }
@@ -128,10 +175,7 @@ public class NetClient : MonoBehaviour
     {
         if (SceneControl.GameNet == 2 && (strAryTotal != "" || recvStr != ""))
         {
-            if (recvStr != "" && strAryTotal != "")
-                strAryTotal = strAryTotal + recvStr;
-            else if (recvStr != "" && strAryTotal == "")
-                strAryTotal = recvStr;
+            strAryTotal = strAryTotal + recvStr;
             string[] strAryLarge = strAryTotal.Split(';');
             recvStr = "";
             recvStrPcs = strAryLarge[0];
@@ -149,11 +193,23 @@ public class NetClient : MonoBehaviour
             TextRecieveStr = "";
         }
 
-        if (sendStr != "")
+        if (sendStr != "" && serverSocket!=null && serverSocket.Connected)
         {
             SocketSend();
             sendStr = "";
+            connectState = true;
         }
+        else if (connectState && serverSocket==null)
+        {
+            recvStr=recvStr+"Alarm,0,400,serverSocket為空值;";
+            connectState = false;
+        }
+        else if (connectState && !serverSocket.Connected)
+        {
+            recvStr=recvStr+"Alarm,0,404,serverSocket未連線或斷開連線...;";
+            connectState = false;
+        }
+
     }
 
     //程式退出則關閉連線

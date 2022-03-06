@@ -255,8 +255,6 @@ public class Stage : MonoBehaviour
             }
         }
 
-        uiText.text = 1f*Screen.width/Screen.height + uiText.text;
-
         //將Frame移到創建關卡
         FramePosX = 0;
         FramePosY = 0;
@@ -1178,6 +1176,7 @@ public class Stage : MonoBehaviour
                             KeyActive();
                             break;
                         default:
+                            NetClientGetCount = 0;
                             break;
                     }
                     uiText.text = "<color=red>錯誤" + int.Parse(strAry[2]) + ": " + strAry[3] + "</color>\n" + uiText.text;
@@ -1399,6 +1398,7 @@ public class Stage : MonoBehaviour
                             KeyActive();
                             break;
                         default:
+                            NetHostGetCount = 0;
                             break;
                     }
                     uiText.text = "<color=red>錯誤" + int.Parse(strAry[2]) + ": " + strAry[3] + "</color>\n" + uiText.text;
