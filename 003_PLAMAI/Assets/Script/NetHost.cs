@@ -1,7 +1,8 @@
-using System;
 using UnityEngine;
 using UnityEngine.UI;
+using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -17,8 +18,9 @@ public class NetHost : MonoBehaviour
     string editString=""; //編輯框文字
 
     //以下預設都是私有的成員
+    string RemoteEndPoint; //客戶端的網路節點
     Socket serverSocket; //伺服器端socket
-    public static Socket clientSocket; //客戶端socket
+    Socket clientSocket; //客戶端socket
     IPEndPoint ipEnd; //偵聽埠
     int roomnum; //接收的字串
     string TextRecieveStr;
@@ -40,8 +42,8 @@ public class NetHost : MonoBehaviour
         serverSocket=new Socket(AddressFamily.InterNetwork,SocketType.Stream,ProtocolType.Tcp);
         //連線
         serverSocket.Bind(ipEnd);
-        //開始偵聽,最大10個連線
-        serverSocket.Listen(10);
+        //開始偵聽,最大1個連線
+        serverSocket.Listen(1);
 
         //開啟一個執行緒連線，必須的，否則主執行緒卡死
         connectThread=new Thread(new ThreadStart(SocketReceive));
@@ -49,7 +51,7 @@ public class NetHost : MonoBehaviour
     }
 
     //連線
-    void SocketConnet()
+    void SocketConnect()
     {
         if(clientSocket!=null)
             clientSocket.Close();
@@ -68,17 +70,7 @@ public class NetHost : MonoBehaviour
         connectState = true;
     }
 
-    public static void StringIntegrate(string sendStrTmp)
-    {
-        //判斷歷史傳輸數據是否有值
-        if (sendStr == "")
-            sendStr = sendStrTmp;
-        else
-            sendStr = sendStr + sendStrTmp;
-        Debug.Log("sendStr = " + sendStr);
-    }
-
-    void SocketSend()
+    void SocketSend(string sendStr)
     {
         //清空傳送快取
         sendData=new byte[8192];
@@ -108,7 +100,7 @@ public class NetHost : MonoBehaviour
     void SocketReceive()
     {
         //連線
-        SocketConnet();
+        SocketConnect();
         //進入接收迴圈
         while(true)
         {
@@ -135,7 +127,7 @@ public class NetHost : MonoBehaviour
             //如果收到的資料長度為0，則重連並進入下一個迴圈
             if(recvLen==0)
             {
-                SocketConnet();
+                SocketConnect();
                 continue;
             }
             //輸出接收到的資料
@@ -144,12 +136,24 @@ public class NetHost : MonoBehaviour
         }
     }
 
+    public static void StringIntegrate(string sendStrTmp)
+    {
+        //判斷歷史傳輸數據是否有值
+        if (sendStr == "")
+            sendStr = sendStrTmp;
+        else
+            sendStr = sendStr + sendStrTmp;
+        Debug.Log("sendStr = " + sendStr);
+    }
+
     //連線關閉
     void SocketQuit()
     {
         //先關閉客戶端
-        if(clientSocket!=null)
-            clientSocket.Close();
+        if(serverSocket!=null)
+        {
+            serverSocket.Close();
+        }
         //再關閉執行緒
         if(connectThread!=null)
         {
@@ -157,10 +161,9 @@ public class NetHost : MonoBehaviour
             connectThread.Abort();
         }
         //最後關閉伺服器
-        if(serverSocket!=null)
+        if(clientSocket!=null)
         {
-            serverSocket.Close();
-            TextRecieveStr = "連線斷開\n"+TextRecieveStr;
+            clientSocket.Close();
         }
     }
 
@@ -176,7 +179,7 @@ public class NetHost : MonoBehaviour
 
     void BtnClick()
     {
-        editString = IFMsg.text+";";
+        editString = SceneControl.GameName+": "+IFMsg.text+";";
         StringIntegrate(editString);
     }
 
@@ -190,7 +193,7 @@ public class NetHost : MonoBehaviour
             string[] strAryLarge = strAryTotal.Split(';');
             recvStr = "";
             recvStrPcs = strAryLarge[0];
-            TextRecieveStr = "收到訊息: "+recvStrPcs+"\n"+TextRecieveStr;
+            TextRecieveStr = recvStrPcs+"\n"+TextRecieveStr;
             if (strAryTotal.Length > 0 && strAryLarge.Length > 2)
                 strAryTotal = strAryTotal.Remove(0,strAryLarge[0].Length+1);
             else
@@ -206,7 +209,7 @@ public class NetHost : MonoBehaviour
 
         if (sendStr != "" && clientSocket!=null && clientSocket.Connected)
         {
-            SocketSend();
+            SocketSend(sendStr);
             sendStr = "";
             connectState = true;
         }

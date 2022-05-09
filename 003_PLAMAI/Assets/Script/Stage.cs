@@ -96,6 +96,7 @@ public class Stage : MonoBehaviour
     float SliderFloat = 0f; //玩家1的完成進度或是生命值
     float SliderFloatPre = 0f; //玩家1的完成進度或是生命值
     float Slider2Float = 0f; //玩家2的完成進度或是生命值
+    int NumOfOut = 0; //合作模式玩家出局數
 
     //--------------------------------------------------------------------------------------------------------
 
@@ -571,7 +572,7 @@ public class Stage : MonoBehaviour
         {
             uiText.text = "<color=magenta>預測地雷數目有誤，請重新檢查！</color>\n" + uiText.text;
         }
-        else if (SceneControl.GameMode <= 1)
+        else if (SceneControl.GameMode == 0)
         {
             RevealMine();
             if (WrongAns > 0)
@@ -595,6 +596,67 @@ public class Stage : MonoBehaviour
             if (SceneControl.GameMode != 0 && SceneControl.GameMode != 2)
                 Frame2Ani.Play("Frame2L");
             KeyActive();
+        }
+        else if (SceneControl.GameMode == 1)
+        {
+            RevealMine();
+            if (WrongAns > 0 && NumOfOut == 0)
+            {
+                uiText.text = "<color=magenta>糟了，解答失敗！錯誤" + WrongAns + "處</color>\n" + uiText.text;
+                NumOfOut += 1;
+                if (SceneControl.GameNet == 1)
+                {
+                    NetHostCount++;
+                    NetHost.StringIntegrate("NumOfOut," + NetHostCount + "," + NumOfOut + ";");
+                }
+                if (SceneControl.GameNet == 2)
+                {
+                    NetClientCount++;
+                    NetClient.StringIntegrate("NumOfOut," + NetClientCount + "," + NumOfOut + ";");
+                }
+            }
+            else if (WrongAns > 0 && NumOfOut > 0)
+            {
+                uiText.text = "<color=magenta>糟了，解答失敗！錯誤" + WrongAns + "處</color>\n" + uiText.text;
+                NumOfOut = 0;
+                if (SceneControl.GameNet == 1)
+                {
+                    NetHostCount++;
+                    NetHost.StringIntegrate("NumOfOut2," + NetHostCount + ";");
+                }
+                if (SceneControl.GameNet == 2)
+                {
+                    NetClientCount++;
+                    NetClient.StringIntegrate("NumOfOut2," + NetClientCount + ";");
+                }
+                SetController(true);
+                stagephase = 2;
+                FramePos = 1;
+                FramePos2 = 2;
+                FrameAni.Play("FrameL");
+                Frame2Pos = 1;
+                Frame2Pos2 = 2;
+                Frame2Ani.Play("Frame2L");
+                KeyActive();
+            }
+            else
+            {
+                NumOfOut = 0;
+                SliderFloat = 1.0f;
+                Slider.value = 1.0f;
+                uiTextSlider.text = SceneControl.GameName+"\n";
+                uiText.text = "<color=white>恭喜！您成功解除地雷了！</color>\n" + uiText.text;
+                SetController(true);
+                stagephase = 2;
+                FramePos = 1;
+                FramePos2 = 2;
+                FrameAni.Play("FrameL");
+                Frame2Pos = 1;
+                Frame2Pos2 = 2;
+                Frame2Ani.Play("Frame2L");
+                KeyActive();
+            }
+
         }
         else if (SceneControl.GameMode == 2)
         {
@@ -642,8 +704,6 @@ public class Stage : MonoBehaviour
             FrameAni.Play("FrameL");
             Frame2Pos = 1;
             Frame2Pos2 = 2;
-            if (SceneControl.GameMode != 0 && SceneControl.GameMode != 2)
-                Frame2Ani.Play("Frame2L");
             KeyActive();
         }
     }
@@ -1068,13 +1128,32 @@ public class Stage : MonoBehaviour
                     }
                     else {uiText.text = "<color=red>BtnEightCheck連線出錯>___<</color>\n" + uiText.text; ResetBtn();}
                     break;
-                case "CheckBtnAnswer":
+                case "NumOfOut":
                     NetClientGetCount++;
                     if (int.Parse(strAry[1]) == NetClientGetCount)
                     {
-                        CheckBtnAnswer();
+                        NumOfOut = int.Parse(strAry[2]);
+                        uiText.text = "<color=magenta>隊友踩到地雷已陣亡...</color>\n" + uiText.text;
                     }
-                    else {uiText.text = "<color=red>CheckBtnAnswer連線出錯>___<</color>\n" + uiText.text; ResetBtn();}
+                    else {uiText.text = "<color=red>NumOfOut連線出錯>___<</color>\n" + uiText.text; ResetBtn();}
+                    break;
+                case "NumOfOut2":
+                    NetClientGetCount++;
+                    if (int.Parse(strAry[1]) == NetClientGetCount)
+                    {
+                        NumOfOut = 0;
+                        uiText.text = "<color=magenta>隊友踩到地雷已陣亡...</color>\n" + uiText.text;
+                        SetController(true);
+                        stagephase = 2;
+                        FramePos = 1;
+                        FramePos2 = 2;
+                        FrameAni.Play("FrameL");
+                        Frame2Pos = 1;
+                        Frame2Pos2 = 2;
+                        Frame2Ani.Play("Frame2L");
+                        KeyActive();
+                    }
+                    else {uiText.text = "<color=red>NumOfOut2連線出錯>___<</color>\n" + uiText.text; ResetBtn();}
                     break;
                 case "SpdModeWin":
                     NetClientGetCount++;
@@ -1290,13 +1369,32 @@ public class Stage : MonoBehaviour
                     }
                     else {uiText.text = "<color=red>BtnEightCheck連線出錯>___<</color>\n" + uiText.text; ResetBtn();}
                     break;
-                case "CheckBtnAnswer":
+                case "NumOfOut":
                     NetHostGetCount++;
                     if (int.Parse(strAry[1]) == NetHostGetCount)
                     {
-                        CheckBtnAnswer();
+                        NumOfOut = int.Parse(strAry[2]);
+                        uiText.text = "<color=magenta>隊友踩到地雷已陣亡...</color>\n" + uiText.text;
                     }
-                    else {uiText.text = "<color=red>CheckBtnAnswer連線出錯>___<</color>\n" + uiText.text; ResetBtn();}
+                    else {uiText.text = "<color=red>NumOfOut連線出錯>___<</color>\n" + uiText.text; ResetBtn();}
+                    break;
+                case "NumOfOut2":
+                    NetHostGetCount++;
+                    if (int.Parse(strAry[1]) == NetHostGetCount)
+                    {
+                        NumOfOut = 0;
+                        uiText.text = "<color=magenta>隊友踩到地雷已陣亡...</color>\n" + uiText.text;
+                        SetController(true);
+                        stagephase = 2;
+                        FramePos = 1;
+                        FramePos2 = 2;
+                        FrameAni.Play("FrameL");
+                        Frame2Pos = 1;
+                        Frame2Pos2 = 2;
+                        Frame2Ani.Play("Frame2L");
+                        KeyActive();
+                    }
+                    else {uiText.text = "<color=red>NumOfOut2連線出錯>___<</color>\n" + uiText.text; ResetBtn();}
                     break;
                 case "SpdModeWin":
                     NetHostGetCount++;
@@ -1679,33 +1777,11 @@ public class Stage : MonoBehaviour
         {
             if (SceneControl.GameMode <= 2)
                 CheckBtnAnswer();
-
-            if (SceneControl.GameNet == 1 && SceneControl.GameMode <= 1)
-            {
-                NetHostCount++;
-                NetHost.StringIntegrate("CheckBtnAnswer," + NetHostCount + ";");
-            }
-            if (SceneControl.GameNet == 2 && SceneControl.GameMode <= 1)
-            {
-                NetClientCount++;
-                NetClient.StringIntegrate("CheckBtnAnswer," + NetClientCount + ";");
-            }
         }
         if ((Input.GetButtonUp("Jump")||Input.GetKeyUp("h")||Input.GetKeyUp("enter")) && FramePos == 2 && stagephase == 1)
         {
             if (SceneControl.GameMode <= 2)
                 CheckBtnAnswer();
-
-            if (SceneControl.GameNet == 1 && SceneControl.GameMode <= 1)
-            {
-                NetHostCount++;
-                NetHost.StringIntegrate("CheckBtnAnswer," + NetHostCount + ";");
-            }
-            if (SceneControl.GameNet == 2 && SceneControl.GameMode <= 1)
-            {
-                NetClientCount++;
-                NetClient.StringIntegrate("CheckBtnAnswer," + NetClientCount + ";");
-            }
         }
 
 
