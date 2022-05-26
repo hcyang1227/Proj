@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 public class Battle : MonoBehaviour
 {
@@ -25,7 +26,9 @@ public class Battle : MonoBehaviour
         public int atk;  //人物攻擊值
         public int def;  //人物防禦值
         public int spd; //人物速度值
-        public int status; //人物狀態 0:正常 1:燒傷 2:冰凍 3:麻痺
+        public bool status_psn; //人物中毒狀態
+        public int status_psn_round; //人物中毒剩下回合數
+        public int status_psn_tm; //人物中毒時間點
         public float ori_x; //人物原本的位置x
         public float ori_y; //人物原本的位置y
         public float now_x; //人物動畫進行中的位置x
@@ -38,16 +41,16 @@ public class Battle : MonoBehaviour
 
     public GameObject ObjPlayer1;
     public Animator AniPlayer1;
-    public Slider BarPlayer1;
+    public TextMeshProUGUI TxtPlayer1;
     public GameObject ObjPlayer2;
     public Animator AniPlayer2;
-    public Slider BarPlayer2;
+    public TextMeshProUGUI TxtPlayer2;
     public GameObject ObjPlayer3;
     public Animator AniPlayer3;
-    public Slider BarPlayer3;
+    public TextMeshProUGUI TxtPlayer3;
     public GameObject ObjEnemy;
     public Animator AniEnemy;
-    public Slider BarEnemy;
+    public TextMeshProUGUI TxtEnemy;
 
     //創建角色
     creature op1 = new creature();
@@ -80,25 +83,21 @@ public class Battle : MonoBehaviour
         op1.atk = rand.Next(10,20);
         op1.def = rand.Next(10,20);
         op1.spd = rand.Next(30,50);
-        op1.status = 0;
         op2.hpmax = 50+rand.Next(0,150);
         op2.hp = op2.hpmax;
         op2.atk = rand.Next(10,20);
         op2.def = rand.Next(10,20);
         op2.spd = rand.Next(30,50)+50;
-        op2.status = 0;
         op3.hpmax = 50+rand.Next(0,150);
         op3.hp = op3.hpmax;
         op3.atk = rand.Next(10,20);
         op3.def = rand.Next(10,20);
         op3.spd = rand.Next(30,50)+100;
-        op3.status = 0;
         oe.hpmax = 50+rand.Next(0,150);
         oe.hp = oe.hpmax;
         oe.atk = rand.Next(10,20);
         oe.def = rand.Next(10,20);
         oe.spd = rand.Next(30,50)+150;
-        oe.status = 0;
     }
 
     void Start()
@@ -109,19 +108,12 @@ public class Battle : MonoBehaviour
 
     void Update()
     {
-        //總是讓相對應的血條在角色上方，並且更新數值
-        BarPlayer1.transform.position = ObjPlayer1.transform.position + new Vector3(0, 100, 0);
-        BarPlayer1.value = op1.hp / 20f;
-        BarPlayer1.maxValue = op1.hpmax / 20f;
-        BarPlayer2.transform.position = ObjPlayer2.transform.position + new Vector3(0, 100, 0);
-        BarPlayer2.value = op2.hp / 20f;
-        BarPlayer2.maxValue = op2.hpmax / 20f;
-        BarPlayer3.transform.position = ObjPlayer3.transform.position + new Vector3(0, 100, 0);
-        BarPlayer3.value = op3.hp / 20f;
-        BarPlayer3.maxValue = op3.hpmax / 20f;
-        BarEnemy.transform.position = ObjEnemy.transform.position + new Vector3(0, 100, 0);
-        BarEnemy.value = oe.hp / 20f;
-        BarEnemy.maxValue = oe.hpmax / 20f;
+
+        //總是更新數值
+        TxtPlayer1.text = op1.hp.ToString() + "/" + op1.hpmax.ToString();
+        TxtPlayer2.text = op2.hp.ToString() + "/" + op2.hpmax.ToString();
+        TxtPlayer3.text = op3.hp.ToString() + "/" + op3.hpmax.ToString();
+        TxtEnemy.text = oe.hp.ToString() + "/" + oe.hpmax.ToString();
 
         //如果在副本模式中發現所有動作已經結束
         if (Field.battle_flag && Field.battle_mode && (battle_action1 == -1) && (battle_order == -1))
@@ -143,21 +135,73 @@ public class Battle : MonoBehaviour
                     battle_char1 = 1;
                     battle_foe1 = -1;
                     battle_animate1 = a03_normal_attack;
+                    //中毒扣HP機制
+                    if (op1.status_psn_round > 1)
+                    {
+                        op1.hp -= rand.Next(4,8);
+                        op1.status_psn_round -= 1;
+                    }
+                    else if (op1.status_psn_round == 1)
+                    {
+                        op1.hp -= rand.Next(4,8);
+                        op1.status_psn_round = 0;
+                        op1.status_psn_tm = 0;
+                        op1.status_psn = false;
+                    }
                     break;
                 case 2:
                     battle_char1 = 2;
                     battle_foe1 = -1;
                     battle_animate1 = a03_normal_attack;
+                    //中毒扣HP機制
+                    if (op2.status_psn_round > 1)
+                    {
+                        op2.hp -= rand.Next(4,8);
+                        op2.status_psn_round -= 1;
+                    }
+                    else if (op2.status_psn_round == 1)
+                    {
+                        op2.hp -= rand.Next(4,8);
+                        op2.status_psn_round = 0;
+                        op2.status_psn_tm = 0;
+                        op2.status_psn = false;
+                    }
                     break;
                 case 3:
                     battle_char1 = 3;
                     battle_foe1 = -1;
                     battle_animate1 = a03_normal_attack;
+                    //中毒扣HP機制
+                    if (op3.status_psn_round > 1)
+                    {
+                        op3.hp -= rand.Next(4,8);
+                        op3.status_psn_round -= 1;
+                    }
+                    else if (op3.status_psn_round == 1)
+                    {
+                        op3.hp -= rand.Next(4,8);
+                        op3.status_psn_round = 0;
+                        op3.status_psn_tm = 0;
+                        op3.status_psn = false;
+                    }
                     break;
                 case -1:
                     battle_char1 = -1;
                     battle_foe1 = rand.Next(1,everyone_speed[0].GetLength(0)-1);
-                    battle_animate1 = a03_normal_attack;
+                    battle_animate1 = a04_normal_attack;
+                    //中毒扣HP機制
+                    if (oe.status_psn_round > 1)
+                    {
+                        oe.hp -= rand.Next(4,8);
+                        oe.status_psn_round -= 1;
+                    }
+                    else if (oe.status_psn_round == 1)
+                    {
+                        oe.hp -= rand.Next(4,8);
+                        oe.status_psn_round = 0;
+                        oe.status_psn_tm = 0;
+                        oe.status_psn = false;
+                    }
                     break;
                 default:
                     break;
@@ -171,6 +215,28 @@ public class Battle : MonoBehaviour
             battle_order = -1;
             roundnum += 1;
         }
+
+        //角色狀態顏色變化
+        if (!Field.frame_unchange)
+        {
+            if (op1.status_psn)
+                ChangeColor("psn", ObjPlayer1, op1);
+            if (op2.status_psn)
+                ChangeColor("psn", ObjPlayer2, op2);
+            if (op3.status_psn)
+                ChangeColor("psn", ObjPlayer3, op3);
+            if (oe.status_psn)
+                ChangeColor("psn", ObjEnemy, oe);
+            if (!op1.status_psn)
+                ObjPlayer1.GetComponent<SpriteRenderer>().color = Color.HSVToRGB(0f, 0f, 1f);
+            if (!op2.status_psn)
+                ObjPlayer2.GetComponent<SpriteRenderer>().color = Color.HSVToRGB(0f, 0f, 1f);
+            if (!op3.status_psn)
+                ObjPlayer3.GetComponent<SpriteRenderer>().color = Color.HSVToRGB(0f, 0f, 1f);
+            if (!oe.status_psn)
+                ObjEnemy.GetComponent<SpriteRenderer>().color = Color.HSVToRGB(0f, 0f, 1f);
+        }
+
 
         if (battle_action1 != -1 && !Field.frame_unchange)
         {
@@ -296,6 +362,12 @@ public class Battle : MonoBehaviour
         }
     }
 
+    void ChangeColor(string str, GameObject Obj, creature person)
+    {
+        if (str == "psn")
+            Obj.GetComponent<SpriteRenderer>().color = Color.HSVToRGB(0.778f, (Mathf.Cos((Field.SysFrameCount - person.status_psn_tm + 45f)/45f*Mathf.PI)+1f)*0.4f, 1f);
+    }
+
     //移動指令解析：{move_mode, character, pos_x, pos_y, speed, speedz, direction, -hp}
     //其中character=0代表只看指定的pos_x, pos_y，=1代表Player，=-1代表Enemy，10代表角色原來位置
     //其中direction=1代表往前，-1代表往後，0代表方向不變
@@ -317,6 +389,12 @@ public class Battle : MonoBehaviour
     {2f, 1f, 130f, 0f, 5f, 6f, 1f, 0f},
     {2f, 1f, 0f, 20f, 5f, 9f, 1f, 0f},
     {-1f, 1f, 0f, 50f, 0f, 0f, 0f, 1f},
+    {4f, 1f, 0f, 0f, 5f, 5f, 1f, 0f},
+    {0f, 10f, 0f, 0f, 5f, 0f, -1f, 0f}};
+    //普通毒攻擊(線性移動)
+    float[,] a04_normal_attack = new float[4,8]
+    {{1f, 1f, 20f, 0f, 20f, 0f, 1f, 0f},
+    {-2f, 1f, 0f, 50f, 0f, 0f, 0f, 1f},
     {4f, 1f, 0f, 0f, 5f, 5f, 1f, 0f},
     {0f, 10f, 0f, 0f, 5f, 0f, -1f, 0f}};
 
@@ -502,6 +580,18 @@ public class Battle : MonoBehaviour
                     move_end = true;
                 }
                 break;
+
+            case -2: //產生毒打擊效果
+                if (!Field.frame_unchange && !move_end)
+                {
+                    MinusHP();
+                    AddStatus("psn", 3);
+                    GameObject ObjEff;
+                    ObjEff = (GameObject)Instantiate(ObjEffect, new Vector3(pos_x, pos_y, 0), new Quaternion(), Canvas.transform);
+                    ObjEff.GetComponent<Animator>().Play("Eff_Psn");
+                    move_end = true;
+                }
+                break;
         }
 
         return (Obj, now_x, now_y, move_end);
@@ -531,6 +621,39 @@ public class Battle : MonoBehaviour
             default:
                 break;
         }
+    }
+
+    void AddStatus(string str, int rounds)
+    {
+        if (str == "psn")
+        {
+            switch(battle_foe1)
+            {
+                case 1:
+                    op1.status_psn = true;
+                    op1.status_psn_tm = Field.SysFrameCount;
+                    op1.status_psn_round = rounds;
+                    break;
+                case 2:
+                    op2.status_psn = true;
+                    op2.status_psn_tm = Field.SysFrameCount;
+                    op2.status_psn_round = rounds;
+                    break;
+                case 3:
+                    op3.status_psn = true;
+                    op3.status_psn_tm = Field.SysFrameCount;
+                    op3.status_psn_round = rounds;
+                    break;
+                case -1:
+                    oe.status_psn = true;
+                    oe.status_psn_tm = Field.SysFrameCount;
+                    oe.status_psn_round = rounds;
+                    break;
+                default:
+                    break;
+            }
+        }
+
     }
 
     private static void Sort<T>(T[][] data, int col)

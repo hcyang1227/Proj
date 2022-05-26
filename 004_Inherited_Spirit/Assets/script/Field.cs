@@ -11,7 +11,7 @@ public class Field : MonoBehaviour
     public static bool battle_flag = true; //目前在戰鬥模式(true)還是走路模式(false)
     public static bool battle_mode = true; //目前在平常模式(false)還是副本模式(true)
     float SysFrame = 0f; //系統絕對幀數(浮點數)
-    int SysFrameCount = 0; //系統絕對幀數(整數)
+    public static int SysFrameCount = 0; //系統絕對幀數(整數)
     int SysFrameCountPre = 0; //系統先前絕對幀數(整數)
     public static bool frame_unchange = false; //是否在同一幀(畫面有無改變)，是則為true
 
